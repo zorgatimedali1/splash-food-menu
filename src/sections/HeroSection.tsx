@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 
+const baseUrl = import.meta.env.BASE_URL ?? '/';
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -48,13 +49,13 @@ export default function HeroSection() {
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover opacity-60"
-        src="/videos/hero_video.mp4"
+        src={`${baseUrl}videos/hero_video.mp4`}
         autoPlay
         muted
         loop
         playsInline
         preload="auto"
-        poster="/images/splash_burger.jpg"
+        poster={`${baseUrl}images/splash_burger.jpg`}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black" />
 
