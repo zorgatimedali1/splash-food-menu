@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
+import Img from '@/components/Img';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 export default function CTADeliverySection() {
@@ -7,12 +8,10 @@ export default function CTADeliverySection() {
 
   return (
     <section className="relative min-h-[60vh] lg:min-h-[65vh] flex items-center justify-center overflow-hidden bg-black">
-      <img
+      <Img
         src="/images/about_histoire.jpg"
         alt="Livraison"
         className="absolute inset-0 w-full h-full object-cover opacity-40"
-        loading="lazy"
-        decoding="async"
       />
       <div className="absolute inset-0 bg-black/60" />
 

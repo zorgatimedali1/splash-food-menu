@@ -1,5 +1,6 @@
 import PageHeader from '@/components/PageHeader';
 import SectionTitle from '@/components/SectionTitle';
+import Img from '@/components/Img';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { TEAM_MEMBERS } from '@/data';
 
@@ -22,12 +23,10 @@ export default function About() {
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div ref={storyRef}>
-              <img
+              <Img
                 src="/images/about_histoire.jpg"
                 alt="Notre histoire"
                 className="w-full rounded-2xl object-cover aspect-video shadow-card"
-                loading="lazy"
-                decoding="async"
               />
             </div>
             <div ref={storyTextRef}>
@@ -65,12 +64,10 @@ export default function About() {
               </div>
             </div>
             <div ref={missionImgRef} className="order-1 lg:order-2">
-              <img
+              <Img
                 src="/images/about_mission.jpg"
                 alt="Notre mission"
                 className="w-full rounded-2xl object-cover aspect-video shadow-card"
-                loading="lazy"
-                decoding="async"
               />
             </div>
           </div>
@@ -85,12 +82,10 @@ export default function About() {
             {TEAM_MEMBERS.map((member) => (
               <div key={member.name} className="team-card group">
                 <div className="aspect-[3/4] rounded-2xl overflow-hidden border border-splash-border">
-                  <img
+                  <Img
                     src={member.image}
                     alt={member.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
                   />
                 </div>
                 <h3 className="mt-5 font-montserrat text-lg font-bold text-black">{member.name}</h3>

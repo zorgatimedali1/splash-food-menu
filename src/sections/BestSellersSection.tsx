@@ -5,6 +5,7 @@ import { Navigation, Autoplay } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import SectionTitle from '@/components/SectionTitle';
+import Img from '@/components/Img';
 import { BEST_SELLERS } from '@/data';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -69,12 +70,10 @@ export default function BestSellersSection() {
             <SwiperSlide key={item.name}>
               <div className="group bg-white border border-splash-border rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
+                  <Img
                     src={item.image}
                     alt={item.name}
                     className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    loading="lazy"
-                    decoding="async"
                   />
                 </div>
                 <div className="p-5">

@@ -119,7 +119,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 function loadCart(): CartItem[] {
   try {
-    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    const raw = sessionStorage.getItem(CART_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -142,7 +142,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.items));
+    sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.items));
   }, [state.items]);
 
   const totalItems = state.items.reduce((sum, i) => sum + i.quantity, 0);

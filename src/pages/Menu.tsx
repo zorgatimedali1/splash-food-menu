@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { FiShoppingCart } from 'react-icons/fi';
 import { toast } from 'sonner';
 import PageHeader from '@/components/PageHeader';
+import Img from '@/components/Img';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { CATEGORIES, MENU_PRODUCTS, getProductSlug } from '@/data';
 import { useCart } from '@/context/CartContext';
@@ -80,12 +81,10 @@ function ProductCard({ product }: { product: typeof MENU_PRODUCTS[0] }) {
       className="menu-card group bg-white border border-splash-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img
+        <Img
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-          loading="lazy"
-          decoding="async"
         />
       </div>
       <div className="p-5">
@@ -132,7 +131,7 @@ function CategorySection({ category, products }: { category: string; products: t
       <div className="section-container">
         <div className="flex items-center gap-6 mb-10">
           <div className="w-20 h-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
-            <img src={CATEGORY_IMAGES[category]} alt={category} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            <Img src={CATEGORY_IMAGES[category]} alt={category} className="w-full h-full object-cover" />
           </div>
           <div>
             <h2 className="font-montserrat text-2xl md:text-3xl font-extrabold text-black tracking-tight uppercase">
@@ -241,7 +240,7 @@ export default function Menu() {
           <div className="section-container">
             <div className="flex items-center gap-6 mb-10">
               <div className="w-20 h-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
-                <img src={CATEGORY_IMAGES[activeCategory]} alt={activeCategory} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                <Img src={CATEGORY_IMAGES[activeCategory]} alt={activeCategory} className="w-full h-full object-cover" />
               </div>
               <div>
                 <h2 className="font-montserrat text-2xl md:text-3xl font-extrabold text-black tracking-tight uppercase">

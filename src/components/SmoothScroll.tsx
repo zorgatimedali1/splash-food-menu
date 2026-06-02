@@ -5,6 +5,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+function forceScrollTop() {
+  window.scrollTo(0, 0);
+  const lenisInstance = (window as any).__lenis;
+  if (lenisInstance) lenisInstance.scrollTo(0, { immediate: true });
+}
+
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if ('scrollRestoration' in history) {
@@ -19,8 +25,10 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       touchMultiplier: 0.7,
     });
 
-    window.scrollTo(0, 0);
-    lenis.scrollTo(0, { immediate: true });
+    (window as any).__lenis = lenis;
+
+    forceScrollTop();
+    ScrollTrigger.refresh();
 
     lenis.on('scroll', ScrollTrigger.update);
 
@@ -30,9 +38,19 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
     gsap.ticker.add(tickerCallback);
 
+    const onLoad = () => forceScrollTop();
+    window.addEventListener('load', onLoad);
+
+    const rafIds = [0, 1, 2, 3].map(() =>
+      requestAnimationFrame(() => forceScrollTop())
+    );
+
     return () => {
       lenis.destroy();
       gsap.ticker.remove(tickerCallback);
+      window.removeEventListener('load', onLoad);
+      rafIds.forEach(cancelAnimationFrame);
+      delete (window as any).__lenis;
     };
   }, []);
 

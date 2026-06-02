@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingCart } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import Img from '@/components/Img';
 import { useCart, getCartProductKey, getCartItemUnitPrice } from '@/context/CartContext';
 import { DELIVERY_FEE, WHATSAPP_NUMBER } from '@/data';
 
@@ -9,11 +10,11 @@ const ADDRESS_STORAGE_KEY = 'splashfood_delivery_address';
 export default function CartSidebar() {
   const { items, isOpen, closeCart, totalItems, subtotal, increment, decrement, removeFromCart } = useCart();
   const [address, setAddress] = useState(() => {
-    try { return localStorage.getItem(ADDRESS_STORAGE_KEY) || ''; } catch { return ''; }
+    try { return sessionStorage.getItem(ADDRESS_STORAGE_KEY) || ''; } catch { return ''; }
   });
 
   useEffect(() => {
-    try { localStorage.setItem(ADDRESS_STORAGE_KEY, address); } catch {}
+    try { sessionStorage.setItem(ADDRESS_STORAGE_KEY, address); } catch {}
   }, [address]);
 
   useEffect(() => {
@@ -136,12 +137,10 @@ export default function CartSidebar() {
                       className="flex items-center gap-3 p-3 rounded-xl border border-splash-border bg-white"
                     >
                       <div className="w-16 h-16 rounded-lg overflow-hidden border border-splash-border flex-shrink-0">
-                        <img
+                        <Img
                           src={product.image}
                           alt={product.name}
                           className="w-full h-full object-cover"
-                          loading="lazy"
-                          decoding="async"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
