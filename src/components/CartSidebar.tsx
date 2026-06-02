@@ -20,6 +20,10 @@ export default function CartSidebar() {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      try {
+        const saved = sessionStorage.getItem(ADDRESS_STORAGE_KEY);
+        if (saved !== null) setAddress(saved);
+      } catch {}
     } else {
       document.body.style.overflow = '';
     }
