@@ -41,15 +41,24 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     const onLoad = () => forceScrollTop();
     window.addEventListener('load', onLoad);
 
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) forceScrollTop();
+    };
+    window.addEventListener('pageshow', onPageShow);
+
     const rafIds = [0, 1, 2, 3].map(() =>
       requestAnimationFrame(() => forceScrollTop())
     );
+
+    const timeoutId = setTimeout(forceScrollTop, 150);
 
     return () => {
       lenis.destroy();
       gsap.ticker.remove(tickerCallback);
       window.removeEventListener('load', onLoad);
+      window.removeEventListener('pageshow', onPageShow);
       rafIds.forEach(cancelAnimationFrame);
+      clearTimeout(timeoutId);
       delete (window as any).__lenis;
     };
   }, []);

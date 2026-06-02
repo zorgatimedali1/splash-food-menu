@@ -141,9 +141,9 @@ export default function ProductDetail() {
         <div className="section-container">
           <Link
             to="/menu"
-            className="inline-flex items-center gap-2 text-sm text-splash-gray hover:text-black transition-colors mb-8 group"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-splash-border text-sm font-montserrat font-bold text-black hover:bg-black hover:text-white hover:border-black transition-all duration-300 mb-8 group"
           >
-            <FiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+            <FiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" size={16} />
             Retour au menu
           </Link>
 
