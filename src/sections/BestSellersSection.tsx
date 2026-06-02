@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
@@ -15,18 +15,6 @@ export default function BestSellersSection() {
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <section ref={sectionRef} className="section-padding bg-splash-light-gray">
@@ -64,7 +52,7 @@ export default function BestSellersSection() {
           }}
           spaceBetween={24}
           slidesPerView={1}
-          autoplay={visible ? { delay: 5000, disableOnInteraction: false } : false}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
           breakpoints={{
             640: { slidesPerView: 2 },
             1024: { slidesPerView: 3 },

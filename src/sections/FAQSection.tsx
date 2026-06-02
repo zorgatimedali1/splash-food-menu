@@ -41,7 +41,7 @@ export default function FAQSection() {
         <div className="bg-white border border-splash-border rounded-2xl px-6 md:px-10 shadow-card">
           {FAQ_ITEMS.map((item, index) => (
             <FAQItem
-              key={index}
+              key={item.question}
               question={item.question}
               answer={item.answer}
               isOpen={openIndex === index}

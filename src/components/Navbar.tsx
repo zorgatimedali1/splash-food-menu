@@ -8,6 +8,12 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const ticking = useRef(false);
+  const prevPathRef = useRef(location.pathname);
+
+  if (location.pathname !== prevPathRef.current) {
+    prevPathRef.current = location.pathname;
+    setMobileOpen(false);
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,10 +28,6 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location]);
 
   useEffect(() => {
     if (mobileOpen) {
@@ -80,9 +82,11 @@ export default function Navbar() {
           mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div
+        <button
+          type="button"
           className="absolute inset-0 bg-black/90 backdrop-blur-lg"
           onClick={() => setMobileOpen(false)}
+          aria-label="Fermer le menu"
         />
         <div
           className={`absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white p-8 transition-transform duration-400 ${

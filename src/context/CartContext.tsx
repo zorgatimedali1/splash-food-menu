@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, use, useReducer, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 
 const CART_STORAGE_KEY = 'splashfood_cart';
 
@@ -157,22 +157,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const closeCart = useCallback(() => dispatch({ type: 'CLOSE' }), []);
   const toggleCart = useCallback(() => dispatch({ type: state.isOpen ? 'CLOSE' : 'OPEN' }), [state.isOpen]);
 
+  const value = useMemo(() => ({
+    items: state.items,
+    isOpen: state.isOpen,
+    totalItems,
+    subtotal,
+    addToCart,
+    removeFromCart,
+    increment,
+    decrement,
+    clearCart,
+    openCart,
+    closeCart,
+    toggleCart,
+  }), [state.items, state.isOpen, totalItems, subtotal, addToCart, removeFromCart, increment, decrement, clearCart, openCart, closeCart, toggleCart]);
+
   return (
     <CartContext.Provider
-      value={{
-        items: state.items,
-        isOpen: state.isOpen,
-        totalItems,
-        subtotal,
-        addToCart,
-        removeFromCart,
-        increment,
-        decrement,
-        clearCart,
-        openCart,
-        closeCart,
-        toggleCart,
-      }}
+      value={value}
     >
       {children}
     </CartContext.Provider>
@@ -180,7 +182,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 }
 
 export function useCart(): CartContextValue {
-  const ctx = useContext(CartContext);
+  const ctx = use(CartContext);
   if (!ctx) throw new Error('useCart must be used within CartProvider');
   return ctx;
 }

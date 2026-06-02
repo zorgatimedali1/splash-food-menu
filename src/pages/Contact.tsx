@@ -120,6 +120,7 @@ export default function Contact() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Localisation Splash Food"
+                sandbox=""
               />
               <a
                 href="https://www.google.com/maps?q=35.8704108,10.5365372"

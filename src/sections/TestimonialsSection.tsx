@@ -24,8 +24,8 @@ export default function TestimonialsSection() {
           }}
           className="testimonial-swiper"
         >
-          {TESTIMONIALS.map((testimonial, index) => (
-            <SwiperSlide key={index}>
+          {TESTIMONIALS.map((testimonial) => (
+            <SwiperSlide key={testimonial.name}>
               <div className="bg-white border border-splash-border rounded-2xl p-6 lg:p-8 h-full flex flex-col shadow-card">
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (

@@ -18,6 +18,8 @@ interface ScrollAnimationOptions {
 
 export function useScrollAnimation<T extends HTMLElement>(options: ScrollAnimationOptions) {
   const ref = useRef<T>(null);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   useEffect(() => {
     const el = ref.current;
@@ -30,7 +32,7 @@ export function useScrollAnimation<T extends HTMLElement>(options: ScrollAnimati
       stagger = 0.1,
       start = 'top 80%',
       childSelector,
-    } = options;
+    } = optionsRef.current;
 
     let targets: Element | Element[] = el;
     if (childSelector) {

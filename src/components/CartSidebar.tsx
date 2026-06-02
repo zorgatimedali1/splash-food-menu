@@ -77,7 +77,12 @@ export default function CartSidebar() {
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="absolute inset-0 bg-black/50" onClick={closeCart} />
+        <button
+          type="button"
+          className="absolute inset-0 bg-black/50"
+          onClick={closeCart}
+          aria-label="Fermer le panier"
+        />
         <div
           className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl transition-transform duration-400 ease-out flex flex-col ${
             isOpen ? 'translate-x-0' : 'translate-x-full'

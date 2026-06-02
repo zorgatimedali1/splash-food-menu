@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import gsap from 'gsap';
 
 export default function PageLoader() {
-  const [visible, setVisible] = useState(true);
-
   useEffect(() => {
-    const tl = gsap.timeline({
-      onComplete: () => setVisible(false),
-    });
+    const tl = gsap.timeline();
 
     tl.fromTo(
       '.loader-logo',
@@ -24,14 +20,13 @@ export default function PageLoader() {
         duration: 0.4,
         ease: 'power2.in',
         delay: 0.2,
-      });
+      })
+      .set('.loader-container', { display: 'none' });
 
     return () => {
       tl.kill();
     };
   }, []);
-
-  if (!visible) return null;
 
   return (
     <div className="loader-container fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center">
