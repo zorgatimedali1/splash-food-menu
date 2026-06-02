@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback, type WheelEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FiShoppingCart } from 'react-icons/fi';
 import { toast } from 'sonner';
@@ -189,16 +189,12 @@ export default function Menu() {
     return Object.keys(groupedByCategory);
   }, [groupedByCategory]);
 
-  useEffect(() => {
+  const handleWheel = useCallback((e: WheelEvent<HTMLDivElement>) => {
     const el = scrollRef.current;
     if (!el) return;
-    const handleWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
-      e.preventDefault();
-      el.scrollLeft += e.deltaY;
-    };
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
+    if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+    e.preventDefault();
+    el.scrollLeft += e.deltaY;
   }, []);
 
   return (
@@ -210,6 +206,7 @@ export default function Menu() {
         <div className="section-container">
           <div
             ref={scrollRef}
+            onWheel={handleWheel}
             className="flex gap-2 overflow-x-auto scrollbar-hide pb-2"
           >
             {CATEGORIES.map((cat) => (
