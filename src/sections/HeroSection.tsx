@@ -56,6 +56,8 @@ export default function HeroSection() {
         playsInline
         preload="none"
         poster={`${baseUrl}images/splash_burger.jpg`}
+        aria-hidden="true"
+        tabIndex={-1}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black" />
 
@@ -75,7 +77,7 @@ export default function HeroSection() {
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
         <div className="w-5 h-9 border-2 border-white/20 rounded-full flex justify-center pt-2">
-          <div className="w-1 h-2 bg-white/60 rounded-full animate-bounce" />
+          <div className="w-1 h-2 bg-white/60 rounded-full scroll-indicator" aria-hidden="true" />
         </div>
       </div>
     </section>

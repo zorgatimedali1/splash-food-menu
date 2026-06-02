@@ -80,7 +80,7 @@ export default function Contact() {
               {submitted ? (
                 <div className="py-10 text-center">
                   <div className="size-16 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="size-8 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="size-8 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -90,20 +90,20 @@ export default function Contact() {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-black mb-2 font-inter">Nom *</label>
-                    <input type="text" required placeholder="Votre nom" className="input-field" />
+                    <label htmlFor="contact-name" className="block text-sm font-semibold text-black mb-2 font-inter">Nom *</label>
+                    <input id="contact-name" type="text" required placeholder="Votre nom" className="input-field" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-black mb-2 font-inter">Email *</label>
-                    <input type="email" required placeholder="Votre email" className="input-field" />
+                    <label htmlFor="contact-email" className="block text-sm font-semibold text-black mb-2 font-inter">Email *</label>
+                    <input id="contact-email" type="email" required placeholder="Votre email" className="input-field" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-black mb-2 font-inter">Sujet *</label>
-                    <input type="text" required placeholder="Sujet" className="input-field" />
+                    <label htmlFor="contact-subject" className="block text-sm font-semibold text-black mb-2 font-inter">Sujet *</label>
+                    <input id="contact-subject" type="text" required placeholder="Sujet" className="input-field" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-black mb-2 font-inter">Message *</label>
-                    <textarea rows={6} required placeholder="Votre message..." className="input-field resize-none" />
+                    <label htmlFor="contact-message" className="block text-sm font-semibold text-black mb-2 font-inter">Message *</label>
+                    <textarea id="contact-message" rows={6} required placeholder="Votre message..." className="input-field resize-none" />
                   </div>
                   <button type="submit" className="btn-primary w-full">
                     ENVOYER

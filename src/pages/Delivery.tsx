@@ -23,7 +23,7 @@ export default function Delivery() {
       <section className="py-8 bg-splash-light-gray">
         <div className="section-container text-center">
           <p className="font-montserrat text-3xl md:text-4xl font-extrabold text-black">
-            LIVRAISON — <span className="text-black">2 DT</span>
+            LIVRAISON - <span className="text-black">2 DT</span>
           </p>
           <p className="mt-2 text-sm text-splash-gray font-inter">
             Frais de livraison fixes pour toutes les commandes

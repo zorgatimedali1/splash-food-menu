@@ -39,6 +39,7 @@ export default function BestSellersSection() {
               onClick={() => swiperRef.current?.slidePrev()}
               disabled={isBeginning}
               className="size-11 rounded-xl border border-splash-border bg-white flex items-center justify-center text-black hover:border-black hover:text-black transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Précédent"
             >
               <FiChevronLeft size={18} />
             </button>
@@ -47,6 +48,7 @@ export default function BestSellersSection() {
               onClick={() => swiperRef.current?.slideNext()}
               disabled={isEnd}
               className="size-11 rounded-xl border border-splash-border bg-white flex items-center justify-center text-black hover:border-black hover:text-black transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Suivant"
             >
               <FiChevronRight size={18} />
             </button>

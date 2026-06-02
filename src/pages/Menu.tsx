@@ -139,7 +139,7 @@ function CategorySection({ category, products }: { category: string; products: t
               {category}
             </h2>
             <p className="text-sm text-splash-gray font-inter mt-1">
-              {CATEGORY_DESCRIPTIONS[category]} — {products.length} {products.length > 1 ? 'plats' : 'plat'}
+              {CATEGORY_DESCRIPTIONS[category]} - {products.length} {products.length > 1 ? 'plats' : 'plat'}
             </p>
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function Menu() {
                   {activeCategory}
                 </h2>
                 <p className="text-sm text-splash-gray font-inter mt-1">
-                  {CATEGORY_DESCRIPTIONS[activeCategory]} — {filteredProducts.length} {filteredProducts.length > 1 ? 'plats' : 'plat'}
+                  {CATEGORY_DESCRIPTIONS[activeCategory]} - {filteredProducts.length} {filteredProducts.length > 1 ? 'plats' : 'plat'}
                 </p>
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function Menu() {
       <section className="py-10 bg-gray-950">
         <div className="section-container text-center">
           <p className="font-montserrat text-lg md:text-xl font-bold text-white tracking-tight">
-            LIVRAISON À DOMICILE — 2 DT
+            LIVRAISON À DOMICILE - 2 DT
           </p>
           <p className="mt-2 text-sm text-white/60 font-inter">
             Commandez par téléphone ou via nos partenaires de livraison
