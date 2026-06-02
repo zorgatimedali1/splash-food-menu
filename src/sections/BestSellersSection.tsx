@@ -35,16 +35,18 @@ export default function BestSellersSection() {
           <SectionTitle title="NOS MEILLEURES VENTES" centered={false} className="mb-0" />
           <div className="hidden md:flex gap-2">
             <button
+              type="button"
               onClick={() => swiperRef.current?.slidePrev()}
               disabled={isBeginning}
-              className="w-11 h-11 rounded-xl border border-splash-border bg-white flex items-center justify-center text-black hover:border-black hover:text-black transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="size-11 rounded-xl border border-splash-border bg-white flex items-center justify-center text-black hover:border-black hover:text-black transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <FiChevronLeft size={18} />
             </button>
             <button
+              type="button"
               onClick={() => swiperRef.current?.slideNext()}
               disabled={isEnd}
-              className="w-11 h-11 rounded-xl border border-splash-border bg-white flex items-center justify-center text-black hover:border-black hover:text-black transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="size-11 rounded-xl border border-splash-border bg-white flex items-center justify-center text-black hover:border-black hover:text-black transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <FiChevronRight size={18} />
             </button>
@@ -86,7 +88,7 @@ export default function BestSellersSection() {
                   <p className="mt-3 font-montserrat text-lg font-extrabold text-black">{item.price} DT</p>
                   <Link
                     to={`/product/${item.slug}`}
-                    className="mt-3 w-full inline-flex items-center justify-center px-3 py-2.5 rounded-lg bg-black text-white text-xs font-montserrat font-bold hover:bg-black/80 transition-all duration-300"
+                    className="mt-3 w-full inline-flex items-center justify-center px-3 py-2.5 rounded-lg bg-gray-950 text-white text-xs font-montserrat font-bold hover:bg-gray-950/80 transition-all duration-300"
                   >
                     Commander
                   </Link>

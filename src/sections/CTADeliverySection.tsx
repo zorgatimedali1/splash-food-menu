@@ -7,7 +7,7 @@ export default function CTADeliverySection() {
   const contentRef = useScrollAnimation<HTMLDivElement>({ type: 'fadeUp' });
 
   return (
-    <section className="relative min-h-[60vh] lg:min-h-[65vh] flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative min-h-[60vh] lg:min-h-[65vh] flex items-center justify-center overflow-hidden bg-gray-950">
       <Img
         src="/images/about_histoire.jpg"
         alt="Livraison"

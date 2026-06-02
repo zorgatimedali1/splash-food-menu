@@ -7,7 +7,7 @@ const rightLinks = NAV_LINKS.slice(mid);
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white">
+    <footer className="bg-gray-950 text-white">
       <div className="section-container py-16 md:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           <div>

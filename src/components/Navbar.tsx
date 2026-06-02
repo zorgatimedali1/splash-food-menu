@@ -65,6 +65,7 @@ export default function Navbar() {
 
 
           <button
+            type="button"
             onClick={() => setMobileOpen(true)}
             className="lg:hidden text-black p-2"
             aria-label="Ouvrir le menu"
@@ -89,6 +90,7 @@ export default function Navbar() {
           }`}
         >
           <button
+            type="button"
             onClick={() => setMobileOpen(false)}
             className="absolute top-6 right-6 text-black p-2"
             aria-label="Fermer le menu"

@@ -39,7 +39,7 @@ export default function PageLoader() {
         SPLASH <span className="font-light">FOOD</span>
       </div>
       <div className="w-48 h-[2px] bg-gray-200 rounded-full mt-6 overflow-hidden">
-        <div className="loader-bar h-full bg-black rounded-full" />
+        <div className="loader-bar h-full bg-gray-950 rounded-full" />
       </div>
     </div>
   );

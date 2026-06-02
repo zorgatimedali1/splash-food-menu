@@ -42,7 +42,7 @@ export default function Delivery() {
                 key={service.name}
                 className="delivery-card card-hover p-10 text-center flex flex-col items-center"
               >
-                <div className="w-16 h-16 rounded-2xl bg-black flex items-center justify-center mb-6">
+                <div className="size-16 rounded-2xl bg-gray-950 flex items-center justify-center mb-6">
                   <span className="font-montserrat text-2xl font-bold text-white">{service.name[0]}</span>
                 </div>
                 <h3 className="font-montserrat text-2xl font-bold text-black">{service.name}</h3>

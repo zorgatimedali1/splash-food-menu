@@ -57,7 +57,7 @@ export default function About() {
               <div className="space-y-4">
                 {['Qualite avant tout', 'Ingredients frais et locaux', 'Recettes innovantes'].map((item) => (
                   <div key={item} className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-black rounded-full flex-shrink-0" />
+                    <div className="size-2 bg-gray-950 rounded-full flex-shrink-0" />
                     <span className="text-black/80 font-inter font-medium">{item}</span>
                   </div>
                 ))}

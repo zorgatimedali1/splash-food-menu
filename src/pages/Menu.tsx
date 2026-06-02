@@ -107,8 +107,9 @@ function ProductCard({ product }: { product: typeof MENU_PRODUCTS[0] }) {
             Détails
           </Link>
           <button
+            type="button"
             onClick={handleAdd}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-black text-white text-xs font-montserrat font-bold hover:bg-black/80 active:scale-95 transition-all duration-300"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-gray-950 text-white text-xs font-montserrat font-bold hover:bg-gray-950/80 active:scale-95 transition-all duration-300"
           >
             <FiShoppingCart size={14} />
             Ajouter
@@ -130,7 +131,7 @@ function CategorySection({ category, products }: { category: string; products: t
     <section className="py-12 md:py-16 border-b border-splash-border last:border-b-0">
       <div className="section-container">
         <div className="flex items-center gap-6 mb-10">
-          <div className="w-20 h-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
+          <div className="size-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
             <Img src={CATEGORY_IMAGES[category]} alt={category} className="w-full h-full object-cover" />
           </div>
           <div>
@@ -213,12 +214,13 @@ export default function Menu() {
           >
             {CATEGORIES.map((cat) => (
               <button
+                type="button"
                 key={cat.name}
                 onClick={() => setActiveCategory(cat.name)}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-300 whitespace-nowrap ${
                   activeCategory === cat.name
-                    ? 'bg-black text-white'
-                    : 'bg-splash-light-gray text-splash-gray border border-splash-border hover:bg-black hover:text-white'
+                    ? 'bg-gray-950 text-white'
+                    : 'bg-splash-light-gray text-splash-gray border border-splash-border hover:bg-gray-950 hover:text-white'
                 }`}
               >
                 {cat.name}
@@ -239,7 +241,7 @@ export default function Menu() {
         <section className="py-12 md:py-16">
           <div className="section-container">
             <div className="flex items-center gap-6 mb-10">
-              <div className="w-20 h-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
+              <div className="size-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
                 <Img src={CATEGORY_IMAGES[activeCategory]} alt={activeCategory} className="w-full h-full object-cover" />
               </div>
               <div>
@@ -262,7 +264,7 @@ export default function Menu() {
       )}
 
       {/* Promo Banner */}
-      <section className="py-10 bg-black">
+      <section className="py-10 bg-gray-950">
         <div className="section-container text-center">
           <p className="font-montserrat text-lg md:text-xl font-bold text-white tracking-tight">
             LIVRAISON À DOMICILE — 2 DT

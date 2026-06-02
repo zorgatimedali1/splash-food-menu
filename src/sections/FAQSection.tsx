@@ -7,6 +7,7 @@ function FAQItem({ question, answer, isOpen, onClick }: { question: string; answ
   return (
     <div className="border-b border-splash-border">
       <button
+        type="button"
         onClick={onClick}
         className="w-full flex items-center justify-between py-6 text-left cursor-pointer group"
       >

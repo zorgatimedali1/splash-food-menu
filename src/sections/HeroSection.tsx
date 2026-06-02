@@ -45,7 +45,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative w-full min-h-[100dvh] overflow-hidden flex items-center justify-center bg-black">
+    <section ref={sectionRef} className="relative w-full min-h-[100dvh] overflow-hidden flex items-center justify-center bg-gray-950">
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover opacity-60"
