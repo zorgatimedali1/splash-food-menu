@@ -7,12 +7,12 @@ export const NAV_LINKS = [
 ];
 
 export const BEST_SELLERS = [
-  { name: 'Splash Pizza', description: 'Notre pizza signature : bœuf, truffe, parmesan', price: 20, image: '/images/splash_pizza.jpg', slug: 'pizza-splash-pizza' },
-  { name: 'Splash Tacos', description: 'Tacos signature double viande, tous les fromages', price: 18, image: '/images/tacos phoyo.jpg', slug: 'tacos-splash-tacos' },
-  { name: 'Chawarma Tabouna', description: 'Tabouna garnie de poulet chawarma mariné', price: 12, image: '/images/tabouna photo.jpg', slug: 'tabouna-chawarma' },
-  { name: 'Cordon Bleu Calzone', description: 'Calzone au cordon bleu fondant, crème fromagère', price: 15, image: '/images/pizza-calzone.jpg', slug: 'calzone-cordon-bleu' },
-  { name: 'Pâtes Carbonara', description: 'Spaghetti carbonara, pancetta, parmesan', price: 23, image: '/images/pate.png', slug: 'pates-spaghetti-carbonara' },
-  { name: 'Poulet Croustillant', description: 'Poulet croustillant pané, frites, sauce BBQ', price: 18, image: '/images/poulet_croustillant.jpg', slug: 'les-plats-poulet-croustillant' },
+  { name: 'Splash Pizza', description: 'Notre pizza signature : bœuf, truffe, parmesan', price: 20, image: '/images/splash_pizza.jpg', slug: 'pizza-splash-pizza', tagline: 'La star du menu ! Un pur délice à chaque bouchée' },
+  { name: 'Splash Tacos', description: 'Tacos signature double viande, tous les fromages', price: 18, image: '/images/tacos phoyo.jpg', slug: 'tacos-splash-tacos', tagline: 'Le roi des tacos, généreux et savoureux' },
+  { name: 'Chawarma Tabouna', description: 'Tabouna garnie de poulet chawarma mariné', price: 12, image: '/images/tabouna photo.jpg', slug: 'tabouna-chawarma', tagline: 'Chuuut... la pépite cachée du chef' },
+  { name: 'Cordon Bleu Calzone', description: 'Calzone au cordon bleu fondant, crème fromagère', price: 15, image: '/images/pizza-calzone.jpg', slug: 'calzone-cordon-bleu', tagline: 'Fondant, généreux, tout simplement irrésistible' },
+  { name: 'Pâtes Carbonara', description: 'Spaghetti carbonara, pancetta, parmesan', price: 23, image: '/images/pate.png', slug: 'pates-spaghetti-carbonara', tagline: 'L\'authentique carbonara, crémeuse et parfumée' },
+  { name: 'Poulet Croustillant', description: 'Poulet croustillant pané, frites, sauce BBQ', price: 18, image: '/images/poulet_croustillant.jpg', slug: 'les-plats-poulet-croustillant', tagline: 'Croustillant à l\'extérieur, tendre à l\'intérieur' },
 ];
 
 export function getKeyFigures() {
