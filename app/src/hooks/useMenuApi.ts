@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiGet, type ProductDTO, type CategoryDTO, type SupplementDTO, type SettingsDTO } from '@/lib/api';
 
-const CACHE_DURATION = 5 * 60 * 1000;
+const CACHE_DURATION = 30 * 1000;
 
 interface CacheEntry<T> {
   data: T;
@@ -32,12 +32,6 @@ async function fetchWithCache<T>(key: string, path: string): Promise<T> {
   return data;
 }
 
-let categoriesPromise: Promise<CategoryDTO[]> | null = null;
-let productsPromise: Promise<ProductDTO[]> | null = null;
-let bestSellersPromise: Promise<ProductDTO[]> | null = null;
-let supplementsPromise: Promise<SupplementDTO[]> | null = null;
-let settingsPromise: Promise<SettingsDTO> | null = null;
-
 export function getProductSlug(category: string, name: string): string {
   return `${category}-${name}`
     .normalize('NFD')
@@ -47,129 +41,51 @@ export function getProductSlug(category: string, name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export function useCategories() {
-  const [categories, setCategories] = useState<CategoryDTO[]>([]);
+function useFetchOnce<T>(key: string, path: string): { data: T; loading: boolean } {
+  const [data, setData] = useState<T>([] as unknown as T);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        if (!categoriesPromise) {
-          categoriesPromise = fetchWithCache<CategoryDTO[]>('categories', '/api/categories');
-        }
-        const data = await categoriesPromise;
-        if (!cancelled) setCategories(data);
+        const result = await fetchWithCache<T>(key, path);
+        if (!cancelled) setData(result);
       } catch (e) {
-        console.error('Failed to fetch categories:', e);
+        console.error(`Failed to fetch ${key}:`, e);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [key, path]);
 
-  return { categories, loading };
+  return { data, loading };
+}
+
+export function useCategories() {
+  const { data, loading } = useFetchOnce<CategoryDTO[]>('categories', '/api/categories');
+  return { categories: data, loading };
 }
 
 export function useProducts() {
-  const [products, setProducts] = useState<ProductDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (!productsPromise) {
-          productsPromise = fetchWithCache<ProductDTO[]>('products', '/api/products?limit=200');
-        }
-        const data = await productsPromise;
-        if (!cancelled) setProducts(data);
-      } catch (e) {
-        console.error('Failed to fetch products:', e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  return { products, loading };
+  const { data, loading } = useFetchOnce<ProductDTO[]>('products', '/api/products?limit=200');
+  return { products: data, loading };
 }
 
 export function useBestSellers() {
-  const [bestSellers, setBestSellers] = useState<ProductDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (!bestSellersPromise) {
-          bestSellersPromise = fetchWithCache<ProductDTO[]>('bestsellers', '/api/products?bestsellers=true');
-        }
-        const data = await bestSellersPromise;
-        if (!cancelled) setBestSellers(data);
-      } catch (e) {
-        console.error('Failed to fetch best sellers:', e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  return { bestSellers, loading };
+  const { data, loading } = useFetchOnce<ProductDTO[]>('bestsellers', '/api/products?bestsellers=true');
+  return { bestSellers: data, loading };
 }
 
 export function useSettings() {
-  const [settings, setSettings] = useState<SettingsDTO | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (!settingsPromise) {
-          settingsPromise = fetchWithCache<SettingsDTO>('settings', '/api/settings');
-        }
-        const data = await settingsPromise;
-        if (!cancelled) setSettings(data);
-      } catch (e) {
-        console.error('Failed to fetch settings:', e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  return { settings, loading };
+  const { data, loading } = useFetchOnce<SettingsDTO | null>('settings', '/api/settings');
+  return { settings: data, loading };
 }
 
 export function useSupplements() {
-  const [supplements, setSupplements] = useState<SupplementDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (!supplementsPromise) {
-          supplementsPromise = fetchWithCache<SupplementDTO[]>('supplements', '/api/supplements');
-        }
-        const data = await supplementsPromise;
-        if (!cancelled) setSupplements(data);
-      } catch (e) {
-        console.error('Failed to fetch supplements:', e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  return { supplements, loading };
+  const { data, loading } = useFetchOnce<SupplementDTO[]>('supplements', '/api/supplements');
+  return { supplements: data, loading };
 }
 
 export function useProductBySlug(slug: string) {
@@ -180,10 +96,7 @@ export function useProductBySlug(slug: string) {
     let cancelled = false;
     (async () => {
       try {
-        if (!productsPromise) {
-          productsPromise = fetchWithCache<ProductDTO[]>('products', '/api/products?limit=200');
-        }
-        const all = await productsPromise;
+        const all = await fetchWithCache<ProductDTO[]>('products', '/api/products?limit=200');
         const found = all.find((p) => getProductSlug(p.category_name, p.name) === slug);
         if (!cancelled) setProduct(found || null);
       } catch (e) {
