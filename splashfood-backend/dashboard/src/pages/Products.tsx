@@ -192,7 +192,7 @@ export default function Products() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="font-medium">{product.name}</p>
+                    <p className="font-medium">{product.category_name ? `${product.category_name} ${product.name}` : product.name}</p>
                     {product.description && <p className="text-xs text-splash-gray mt-0.5 truncate max-w-xs">{product.description}</p>}
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
