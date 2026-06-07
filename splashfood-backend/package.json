@@ -1,0 +1,20 @@
+{
+  "name": "splashfood-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute splashfood-db --file=./src/db/schema.sql",
+    "db:seed": "wrangler d1 execute splashfood-db --file=./src/db/seed.sql"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20250602.0",
+    "hono": "^4.6.20",
+    "itty-router": "^5.0.18"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "wrangler": "^4.98.0"
+  }
+}
