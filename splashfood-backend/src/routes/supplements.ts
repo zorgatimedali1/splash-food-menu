@@ -13,13 +13,17 @@ export const handleSupplements = async (request: Request, env: Env, path: string
     const limited = publicApiRateLimit(request);
     if (limited) return limited;
 
-    const cacheKey = 'supplements:all';
-    const cached = cacheGet<Supplement[]>(cacheKey);
-    if (cached) return jsonResponse(formatResponse(cached), 200, publicCacheHeaders);
+    const url = new URL(request.url);
+    const all = url.searchParams.get('all') === 'true';
 
-    const { results } = await env.DB.prepare('SELECT * FROM supplements WHERE is_active = 1 ORDER BY name ASC').all<Supplement>();
-    cacheSet(cacheKey, results, 300);
-    return jsonResponse(formatResponse(results), 200, publicCacheHeaders);
+    const cacheKey = `supplements:${all ? 'all' : 'active'}`;
+    const cached = cacheGet<Supplement[]>(cacheKey);
+    if (cached) return jsonResponse(formatResponse(cached), 200, all ? undefined : publicCacheHeaders);
+
+    const where = all ? '1=1' : 'is_active = 1';
+    const { results } = await env.DB.prepare(`SELECT * FROM supplements WHERE ${where} ORDER BY name ASC`).all<Supplement>();
+    cacheSet(cacheKey, results, all ? 60 : 300);
+    return jsonResponse(formatResponse(results), 200, all ? undefined : publicCacheHeaders);
   }
 
   // POST /api/supplements

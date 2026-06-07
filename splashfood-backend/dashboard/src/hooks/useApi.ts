@@ -147,7 +147,7 @@ export const useDeleteProduct = () => {
 export const useSupplements = () =>
   useQuery<SingleResponse<Supplement[]>>({
     queryKey: ['supplements'],
-    queryFn: () => api.get('/api/supplements'),
+    queryFn: () => api.get('/api/supplements?all=true'),
     staleTime: STALE, gcTime: CACHE,
   });
 
@@ -164,7 +164,18 @@ export const useUpdateSupplement = () => {
   return useMutation({
     mutationFn: ({ id, ...data }: { id: number; name?: string; price?: number; is_active?: number }) =>
       api.put<SingleResponse<Supplement>>(`/api/supplements/${id}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['supplements'] }),
+    onMutate: async ({ id, is_active }) => {
+      if (is_active === undefined) return;
+      await qc.cancelQueries({ queryKey: ['supplements'] });
+      const prev = qc.getQueryData(['supplements']);
+      qc.setQueryData(['supplements'], (old: SingleResponse<Supplement[]> | undefined) => {
+        if (!old) return old;
+        return { ...old, data: old.data.map(s => s.id === id ? { ...s, is_active } : s) };
+      });
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => { if (ctx?.prev) qc.setQueryData(['supplements'], ctx.prev); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['supplements'] }),
   });
 };
 

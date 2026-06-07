@@ -155,6 +155,14 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
     if (!product) return jsonResponse(errorResponse('Product not found'), 404);
 
     const newBestseller = product.is_bestseller ? 0 : 1;
+
+    if (newBestseller) {
+      const { count } = (await env.DB.prepare(
+        'SELECT COUNT(*) as count FROM products WHERE is_bestseller = 1 AND id != ?'
+      ).bind(id).first<{ count: number }>())!;
+      if (count >= 4) return jsonResponse(errorResponse('Maximum 4 best-sellers autorisés'), 400);
+    }
+
     await env.DB.prepare('UPDATE products SET is_bestseller = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').bind(newBestseller, id).run();
 
     flushMultiple('products', 'stats');
