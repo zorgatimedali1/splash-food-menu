@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+**/.env
+
+# Logs
+*.log
+logs/
+
+# Wrangler
+.wrangler/
+**/.wrangler/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
