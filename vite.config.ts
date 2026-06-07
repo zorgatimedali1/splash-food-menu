@@ -4,22 +4,20 @@ import { defineConfig } from "vite"
 import { visualizer } from 'rollup-plugin-visualizer'
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 // https://vite.dev/config/
 export default defineConfig({
   base: '/',
-  plugins: [
-    react(),
-    ViteImageOptimizer({
-      png: { quality: 70 },
-      jpeg: { quality: 70 },
-      jpg: { quality: 70 },
-      webp: { lossless: false, quality: 65 },
-      avif: { lossless: false, quality: 55 },
-      includePublic: true,
-      logStats: true,
-    }),
-    visualizer({ filename: 'dist/stats.html', gzipSize: true, brotliSize: true }),
-  ],
+  plugins: [react(), ViteImageOptimizer({
+    png: { quality: 70 },
+    jpeg: { quality: 70 },
+    jpg: { quality: 70 },
+    webp: { lossless: false, quality: 65 },
+    avif: { lossless: false, quality: 55 },
+    includePublic: true,
+    logStats: true,
+  }), visualizer({ filename: 'dist/stats.html', gzipSize: true, brotliSize: true }), cloudflare()],
   build: {
     rollupOptions: {
       output: {

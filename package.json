@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "optimize-images": "node scripts/optimize-images.mjs"
+    "preview": "npm run build && wrangler dev",
+    "optimize-images": "node scripts/optimize-images.mjs",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "gsap": "^3.15.0",
@@ -23,6 +24,7 @@
     "swiper": "^12.2.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.40.0",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
@@ -42,6 +44,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vite-plugin-image-optimizer": "^2.0.3"
+    "vite-plugin-image-optimizer": "^2.0.3",
+    "wrangler": "^4.98.0"
   }
 }
