@@ -1,30 +1,13 @@
-import { useState, useMemo, useRef, useEffect, useCallback, type WheelEvent } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FiShoppingCart } from 'react-icons/fi';
 import { toast } from 'sonner';
 import PageHeader from '@/components/PageHeader';
 import Img from '@/components/Img';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import { CATEGORIES, MENU_PRODUCTS, getProductSlug } from '@/data';
+import { useCategories, useProducts, getProductSlug } from '@/hooks/useMenuApi';
 import { useCart } from '@/context/CartContext';
-
-const CATEGORY_IMAGES: Record<string, string> = {
-  TABOUNA: '/images/tabouna photo.jpg',
-  CORNET: '/images/cornet photo.jpeg',
-  CALZONE: '/images/pizza-calzone.jpg',
-  LIBANAIS: '/images/splash_sandwich.jpg',
-  CIABATTA: '/images/cibatta photo.jpg',
-  MAKLOUB: '/images/makloub photo.jpg',
-  PIZZA: '/images/splash_pizza.jpg',
-  TRIANGLE: '/images/triangle photo.png',
-  'BAGUETTE FARCIE': '/images/baguette farce.jpg',
-  TACOS: '/images/tacos phoyo.jpg',
-  PÂTES: '/images/pate.png',
-  SALADES: '/images/splash_salade.jpg',
-  'LES PLATS': '/images/poulet_croustillant.jpg',
-  OMELETTE: '/images/splash_omelette.jpg',
-  BOISSONS: '/images/splash_boissons.jpg',
-};
+import type { ProductDTO, CategoryDTO } from '@/lib/api';
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   TABOUNA: 'Tabounas farcies, pains traditionnels tunisiens garnis',
@@ -44,16 +27,16 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   BOISSONS: 'Boissons fraîches et rafraîchissements',
 };
 
-function ProductCard({ product }: { product: typeof MENU_PRODUCTS[0] }) {
+function ProductCard({ product }: { product: ProductDTO }) {
   const { addToCart } = useCart();
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleAdd = useCallback(() => {
     addToCart({
-      category: product.category,
+      category: product.category_name,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: product.image_url || '/images/placeholder.jpg',
     });
     toast.success('Produit ajouté au panier', {
       style: {
@@ -82,7 +65,7 @@ function ProductCard({ product }: { product: typeof MENU_PRODUCTS[0] }) {
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <Img
-          src={product.image}
+          src={product.image_url || '/images/placeholder.jpg'}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
@@ -101,7 +84,7 @@ function ProductCard({ product }: { product: typeof MENU_PRODUCTS[0] }) {
         </p>
         <div className="mt-3 flex items-center gap-2">
           <Link
-            to={`/product/${getProductSlug(product)}`}
+            to={`/product/${getProductSlug(product.category_name, product.name)}`}
             className="flex-1 inline-flex items-center justify-center px-3 py-2 rounded-lg border border-splash-border text-black text-xs font-montserrat font-bold hover:bg-splash-light-gray transition-all duration-300"
           >
             Détails
@@ -120,7 +103,7 @@ function ProductCard({ product }: { product: typeof MENU_PRODUCTS[0] }) {
   );
 }
 
-function CategorySection({ category, products }: { category: string; products: typeof MENU_PRODUCTS }) {
+function CategorySection({ category, products, imageUrl }: { category: string; products: ProductDTO[]; imageUrl?: string }) {
   const gridRef = useScrollAnimation<HTMLDivElement>({
     type: 'staggerCards',
     childSelector: '.product-card',
@@ -132,7 +115,7 @@ function CategorySection({ category, products }: { category: string; products: t
       <div className="section-container">
         <div className="flex items-center gap-6 mb-10">
           <div className="size-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
-            <Img src={CATEGORY_IMAGES[category]} alt={category} className="w-full h-full object-cover" />
+            <Img src={imageUrl || ''} alt={category} className="w-full h-full object-cover" />
           </div>
           <div>
             <h2 className="font-montserrat text-2xl md:text-3xl font-extrabold text-black tracking-tight uppercase">
@@ -146,7 +129,7 @@ function CategorySection({ category, products }: { category: string; products: t
 
         <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {products.map((product) => (
-            <div key={`${product.category}-${product.name}`} className="product-card">
+            <div key={`p-${product.id}`} className="product-card">
               <ProductCard product={product} />
             </div>
           ))}
@@ -156,40 +139,65 @@ function CategorySection({ category, products }: { category: string; products: t
   );
 }
 
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="bg-white border border-splash-border rounded-2xl overflow-hidden animate-pulse">
+          <div className="aspect-[4/3] bg-splash-light-gray" />
+          <div className="p-5 space-y-3">
+            <div className="h-4 bg-splash-light-gray rounded w-3/4" />
+            <div className="h-3 bg-splash-light-gray rounded w-full" />
+            <div className="h-3 bg-splash-light-gray rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Menu() {
   const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState('TOUT');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { categories, loading: catLoading } = useCategories();
+  const { products, loading: prodLoading } = useProducts();
 
   useEffect(() => {
     const category = searchParams.get('category');
     if (category) {
-      const found = CATEGORIES.find((c) => c.name === category.toUpperCase());
+      const found = categories.find((c: CategoryDTO) => c.name === category.toUpperCase());
       if (found) setActiveCategory(found.name);
     }
-  }, [searchParams]);
+  }, [searchParams, categories]);
 
   const filteredProducts = useMemo(() => {
-    if (activeCategory === 'TOUT') return MENU_PRODUCTS;
-    return MENU_PRODUCTS.filter((p) => p.category === activeCategory);
-  }, [activeCategory]);
+    if (activeCategory === 'TOUT') return products;
+    return products.filter((p) => p.category_name === activeCategory);
+  }, [activeCategory, products]);
 
   const groupedByCategory = useMemo(() => {
     if (activeCategory !== 'TOUT') return null;
-    const groups: Record<string, typeof MENU_PRODUCTS> = {};
-    MENU_PRODUCTS.forEach((p) => {
-      if (!groups[p.category]) groups[p.category] = [];
-      groups[p.category].push(p);
+    const groups: Record<string, ProductDTO[]> = {};
+    products.forEach((p) => {
+      if (!groups[p.category_name]) groups[p.category_name] = [];
+      groups[p.category_name].push(p);
     });
     return groups;
-  }, [activeCategory]);
+  }, [activeCategory, products]);
 
   const displayCategories = useMemo(() => {
     if (!groupedByCategory) return [];
     return Object.keys(groupedByCategory);
   }, [groupedByCategory]);
 
-  const handleWheel = useCallback((e: WheelEvent<HTMLDivElement>) => {
+  const catImageMap = useMemo(() => {
+    const m: Record<string, string> = {};
+    categories.forEach((c) => { if (c.image_url) m[c.name] = c.image_url; });
+    return m;
+  }, [categories]);
+
+  const handleWheel = useCallback((e: WheelEvent) => {
     const el = scrollRef.current;
     if (!el) return;
     if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
@@ -197,41 +205,70 @@ export default function Menu() {
     el.scrollLeft += e.deltaY;
   }, []);
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
+
   return (
     <main className="min-h-screen bg-white">
       <PageHeader title="NOTRE MENU" breadcrumb="Menu" />
 
-      {/* Category Navigation */}
       <section className="py-6 md:py-8 border-b border-splash-border sticky top-20 z-40 bg-white shadow-sm">
         <div className="section-container">
           <div
             ref={scrollRef}
-            onWheel={handleWheel}
             className="flex gap-2 overflow-x-auto scrollbar-hide pb-2"
           >
-            {CATEGORIES.map((cat) => (
-              <button
-                type="button"
-                key={cat.name}
-                onClick={() => setActiveCategory(cat.name)}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-300 whitespace-nowrap ${
-                  activeCategory === cat.name
-                    ? 'bg-gray-950 text-white'
-                    : 'bg-splash-light-gray text-splash-gray border border-splash-border hover:bg-gray-950 hover:text-white'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
+            {catLoading ? (
+              <div className="flex gap-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-9 w-24 bg-splash-light-gray rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              categories.map((cat: CategoryDTO) => (
+                <button
+                  type="button"
+                  key={cat.name}
+                  onClick={() => setActiveCategory(cat.name)}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-300 whitespace-nowrap ${
+                    activeCategory === cat.name
+                      ? 'bg-gray-950 text-white'
+                      : 'bg-splash-light-gray text-splash-gray border border-splash-border hover:bg-gray-950 hover:text-white'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))
+            )}
+            <button
+              type="button"
+              onClick={() => setActiveCategory('TOUT')}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-300 whitespace-nowrap ${
+                activeCategory === 'TOUT'
+                  ? 'bg-gray-950 text-white'
+                  : 'bg-splash-light-gray text-splash-gray border border-splash-border hover:bg-gray-950 hover:text-white'
+              }`}
+            >
+              TOUT
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Menu Content */}
-      {activeCategory === 'TOUT' ? (
+      {prodLoading ? (
+        <section className="py-12 md:py-16">
+          <div className="section-container">
+            <SkeletonGrid />
+          </div>
+        </section>
+      ) : activeCategory === 'TOUT' ? (
         <div>
           {displayCategories.map((cat) => (
-            <CategorySection key={cat} category={cat} products={groupedByCategory![cat]} />
+            <CategorySection key={cat} category={cat} products={groupedByCategory![cat]} imageUrl={catImageMap[cat]} />
           ))}
         </div>
       ) : (
@@ -239,7 +276,7 @@ export default function Menu() {
           <div className="section-container">
             <div className="flex items-center gap-6 mb-10">
               <div className="size-20 rounded-2xl overflow-hidden border border-splash-border flex-shrink-0 shadow-sm">
-                <Img src={CATEGORY_IMAGES[activeCategory]} alt={activeCategory} className="w-full h-full object-cover" />
+                <Img src={catImageMap[activeCategory] || ''} alt={activeCategory} className="w-full h-full object-cover" />
               </div>
               <div>
                 <h2 className="font-montserrat text-2xl md:text-3xl font-extrabold text-black tracking-tight uppercase">
@@ -253,14 +290,13 @@ export default function Menu() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
-                <ProductCard key={`${product.category}-${product.name}`} product={product} />
+                <ProductCard key={`p-${product.id}`} product={product} />
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Promo Banner */}
       <section className="py-10 bg-gray-950">
         <div className="section-container text-center">
           <p className="font-montserrat text-lg md:text-xl font-bold text-white tracking-tight">

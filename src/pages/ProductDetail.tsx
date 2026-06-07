@@ -5,12 +5,7 @@ import { toast } from 'sonner';
 import PageHeader from '@/components/PageHeader';
 import Img from '@/components/Img';
 import { useCart } from '@/context/CartContext';
-import {
-  SUPPLÉMENTS_PRODUCTS,
-  DELIVERY_FEE,
-  WHATSAPP_NUMBER,
-  getProductBySlug,
-} from '@/data';
+import { useProductBySlug, useSupplements, useSettings } from '@/hooks/useMenuApi';
 
 const ADDRESS_STORAGE_KEY = 'splashfood_delivery_address';
 
@@ -29,9 +24,11 @@ function ProductNotFound() {
 }
 
 function SupplementsList({
+  supplements,
   selectedSupps,
   toggleSupp,
 }: {
+  supplements: { name: string; price: number }[];
   selectedSupps: Set<string>;
   toggleSupp: (name: string) => void;
 }) {
@@ -41,7 +38,7 @@ function SupplementsList({
         Suppléments
       </p>
       <div className="space-y-2 max-h-80 overflow-y-auto">
-        {SUPPLÉMENTS_PRODUCTS.map((s) => {
+        {supplements.map((s) => {
           const isSelected = selectedSupps.has(s.name);
           return (
             <button
@@ -79,6 +76,7 @@ function SupplementsList({
 
 function OrderCard({
   product,
+  supplements,
   selectedSupps,
   toggleSupp,
   instructions,
@@ -87,10 +85,13 @@ function OrderCard({
   onAddressChange,
   addressError,
   total,
+  deliveryFee,
+  whatsappNumber,
   handleAddToCart,
   whatsappMessage,
 }: {
-  product: NonNullable<ReturnType<typeof getProductBySlug>>;
+  product: NonNullable<ReturnType<typeof useProductBySlug>['product']>;
+  supplements: { name: string; price: number }[];
   selectedSupps: Set<string>;
   toggleSupp: (name: string) => void;
   instructions: string;
@@ -99,6 +100,8 @@ function OrderCard({
   onAddressChange: (v: string) => void;
   addressError: boolean;
   total: number;
+  deliveryFee: number;
+  whatsappNumber: string;
   handleAddToCart: () => void;
   whatsappMessage: string;
 }) {
@@ -112,11 +115,11 @@ function OrderCard({
         <div className="flex items-center justify-between pb-4 border-b border-splash-border">
           <div className="flex items-center gap-3">
             <div className="size-12 rounded-lg overflow-hidden border border-splash-border flex-shrink-0">
-              <Img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <Img src={product.image_url || '/images/placeholder.jpg'} alt={product.name} className="w-full h-full object-cover" />
             </div>
             <div>
-              <p className="font-montserrat text-sm font-bold text-black">{product.category} {product.name}</p>
-              <p className="text-xs text-splash-gray">{product.category}</p>
+              <p className="font-montserrat text-sm font-bold text-black">{product.category_name} {product.name}</p>
+              <p className="text-xs text-splash-gray">{product.category_name}</p>
             </div>
           </div>
           <span className="font-montserrat text-sm font-extrabold text-black">
@@ -124,11 +127,11 @@ function OrderCard({
           </span>
         </div>
 
-        <SupplementsList selectedSupps={selectedSupps} toggleSupp={toggleSupp} />
+        <SupplementsList supplements={supplements} selectedSupps={selectedSupps} toggleSupp={toggleSupp} />
 
         <div className="flex items-center justify-between py-3 border-b border-splash-border">
           <span className="font-inter text-sm text-splash-gray">Livraison</span>
-          <span className="font-montserrat text-sm font-bold text-black">{DELIVERY_FEE} DT</span>
+          <span className="font-montserrat text-sm font-bold text-black">{deliveryFee} DT</span>
         </div>
 
         <div className="flex items-center justify-between py-4 border-b border-splash-border">
@@ -188,7 +191,7 @@ function OrderCard({
           type="button"
           onClick={() => {
             if (!address.trim()) { return; }
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`, '_blank', 'noopener');
+            window.open(`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`, '_blank', 'noopener');
           }}
           className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-montserrat font-bold text-sm text-white bg-[#25D366] hover:bg-[#1DA851] active:scale-[0.98] transition-all duration-300 shadow-sm hover:shadow-md mt-3"
         >
@@ -207,10 +210,9 @@ function OrderCard({
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const product = useMemo(() => {
-    if (!slug) return undefined;
-    return getProductBySlug(slug);
-  }, [slug]);
+  const { product, loading: prodLoading } = useProductBySlug(slug || '');
+  const { supplements } = useSupplements();
+  const { settings } = useSettings();
 
   const { addToCart } = useCart();
 
@@ -241,12 +243,12 @@ export default function ProductDetail() {
       return;
     }
     setAddressError(false);
-    const selected = SUPPLÉMENTS_PRODUCTS.filter((s) => selectedSupps.has(s.name));
+    const selected = supplements.filter((s) => selectedSupps.has(s.name));
     addToCart({
-      category: product.category,
+      category: product.category_name,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: product.image_url || '/images/placeholder.jpg',
       supplements: selected.length > 0 ? selected : undefined,
       instructions: instructions.trim() || undefined,
     });
@@ -262,21 +264,24 @@ export default function ProductDetail() {
         padding: '12px 20px',
       },
     });
-  }, [product, selectedSupps, instructions, address, addToCart]);
+  }, [product, selectedSupps, instructions, address, addToCart, supplements]);
 
   const handleAddressChange = useCallback((v: string) => {
     setAddress(v);
     if (v.trim()) setAddressError(false);
   }, []);
 
+  const deliveryFee = settings ? Number(settings.delivery_fee) || 2 : 2;
+  const whatsappNumber = settings?.whatsapp_number || '21699744593';
+
   const total = useMemo(() => {
     if (!product) return 0;
     let sum = product.price;
-    SUPPLÉMENTS_PRODUCTS.forEach((s) => {
+    supplements.forEach((s) => {
       if (selectedSupps.has(s.name)) sum += s.price;
     });
-    return sum + DELIVERY_FEE;
-  }, [product, selectedSupps]);
+    return sum + deliveryFee;
+  }, [product, selectedSupps, supplements, deliveryFee]);
 
   const whatsappMessage = useMemo(() => {
     if (!product) return '';
@@ -284,10 +289,10 @@ export default function ProductDetail() {
       'Bonjour Splash Food Resto !',
       '',
       'Commande :',
-      `- ${product.category} ${product.name} x1 — ${product.price} DT`,
+      `- ${product.category_name} ${product.name} x1 — ${product.price} DT`,
     ];
 
-    const selected = SUPPLÉMENTS_PRODUCTS.filter((s) => selectedSupps.has(s.name));
+    const selected = supplements.filter((s) => selectedSupps.has(s.name));
     if (selected.length > 0) {
       lines.push('');
       lines.push('Suppléments :');
@@ -296,7 +301,7 @@ export default function ProductDetail() {
 
     lines.push('');
     lines.push(`Sous-total : ${product.price + selected.reduce((a, s) => a + s.price, 0)} DT`);
-    lines.push(`Livraison : ${DELIVERY_FEE} DT`);
+    lines.push(`Livraison : ${deliveryFee} DT`);
     lines.push(`Total : ${total} DT`);
 
     if (instructions.trim()) {
@@ -313,13 +318,28 @@ export default function ProductDetail() {
     lines.push('Merci !');
 
     return encodeURIComponent(lines.join('\n'));
-  }, [product, selectedSupps, instructions, address, total]);
+  }, [product, selectedSupps, instructions, address, total, supplements, deliveryFee]);
+
+  if (prodLoading) {
+    return (
+      <main className="min-h-screen bg-white">
+        <PageHeader title="CHARGEMENT..." breadcrumb="Produit" />
+        <div className="section-container py-20 text-center">
+          <div className="animate-pulse space-y-4 max-w-md mx-auto">
+            <div className="h-64 bg-splash-light-gray rounded-2xl" />
+            <div className="h-6 bg-splash-light-gray rounded w-3/4 mx-auto" />
+            <div className="h-4 bg-splash-light-gray rounded w-1/2 mx-auto" />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!product) return <ProductNotFound />;
 
   return (
     <main className="min-h-screen bg-white">
-      <PageHeader title={`${product.category} ${product.name}`} breadcrumb={`Menu / ${product.category}`} />
+      <PageHeader title={`${product.category_name} ${product.name}`} breadcrumb={`Menu / ${product.category_name}`} />
 
       <section className="py-10 md:py-16">
         <div className="section-container">
@@ -336,14 +356,14 @@ export default function ProductDetail() {
               <div className="sticky top-28">
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-splash-border shadow-sm">
                   <Img
-                    src={product.image}
+                    src={product.image_url || '/images/placeholder.jpg'}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="mt-6">
                   <h1 className="font-montserrat text-3xl md:text-4xl font-extrabold text-black uppercase tracking-tight">
-                    {product.category} {product.name}
+                    {product.category_name} {product.name}
                   </h1>
                   <p className="mt-3 text-base text-splash-gray leading-relaxed max-w-xl">
                     {product.description}
@@ -354,6 +374,7 @@ export default function ProductDetail() {
 
             <OrderCard
               product={product}
+              supplements={supplements}
               selectedSupps={selectedSupps}
               toggleSupp={toggleSupp}
               instructions={instructions}
@@ -362,6 +383,8 @@ export default function ProductDetail() {
               onAddressChange={handleAddressChange}
               addressError={addressError}
               total={total}
+              deliveryFee={deliveryFee}
+              whatsappNumber={whatsappNumber}
               handleAddToCart={handleAddToCart}
               whatsappMessage={whatsappMessage}
             />

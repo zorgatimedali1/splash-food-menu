@@ -3,15 +3,19 @@ import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingCart } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import Img from '@/components/Img';
 import { useCart, getCartProductKey, getCartItemUnitPrice } from '@/context/CartContext';
-import { DELIVERY_FEE, WHATSAPP_NUMBER } from '@/data';
+import { useSettings } from '@/hooks/useMenuApi';
 
 const ADDRESS_STORAGE_KEY = 'splashfood_delivery_address';
 
 export default function CartSidebar() {
   const { items, isOpen, closeCart, totalItems, subtotal, increment, decrement, removeFromCart } = useCart();
+  const { settings } = useSettings();
   const [address, setAddress] = useState(() => {
     try { return sessionStorage.getItem(ADDRESS_STORAGE_KEY) || ''; } catch { return ''; }
   });
+
+  const deliveryFee = settings ? Number(settings.delivery_fee) || 2 : 2;
+  const whatsappNumber = settings?.whatsapp_number || '21699744593';
 
   useEffect(() => {
     try { sessionStorage.setItem(ADDRESS_STORAGE_KEY, address); } catch {}
@@ -31,7 +35,7 @@ export default function CartSidebar() {
   }, [isOpen]);
 
   const [addressError, setAddressError] = useState(false);
-  const total = subtotal > 0 ? subtotal + DELIVERY_FEE : 0;
+  const total = subtotal > 0 ? subtotal + deliveryFee : 0;
 
   const whatsappMessage = useMemo(() => {
     if (items.length === 0) return '';
@@ -52,14 +56,14 @@ export default function CartSidebar() {
     });
     lines.push('');
     lines.push(`Sous-total : ${subtotal.toFixed(3)} DT`);
-    lines.push(`Livraison : ${DELIVERY_FEE} DT`);
+    lines.push(`Livraison : ${deliveryFee} DT`);
     lines.push(`Total : ${total.toFixed(3)} DT`);
     lines.push('');
     lines.push(`Adresse de livraison : ${address.trim()}`);
     lines.push('');
     lines.push('Merci !');
     return encodeURIComponent(lines.join('\n'));
-  }, [items, subtotal, total, address]);
+  }, [items, subtotal, total, address, deliveryFee]);
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setAddress(e.target.value);
@@ -71,7 +75,7 @@ export default function CartSidebar() {
       setAddressError(true);
       return;
     }
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`, '_blank', 'noopener');
+    window.open(`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`, '_blank', 'noopener');
   };
 
   return (
@@ -92,7 +96,6 @@ export default function CartSidebar() {
             isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-splash-border">
             <div>
               <h2 className="font-montserrat text-lg font-extrabold text-black uppercase tracking-tight">
@@ -112,7 +115,6 @@ export default function CartSidebar() {
             </button>
           </div>
 
-          {/* Empty State */}
           {items.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center px-6">
               <div className="size-20 rounded-full bg-splash-light-gray flex items-center justify-center mb-5">
@@ -134,7 +136,6 @@ export default function CartSidebar() {
             </div>
           )}
 
-          {/* Cart Items */}
           {items.length > 0 && (
             <>
               <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
@@ -205,7 +206,6 @@ export default function CartSidebar() {
                 })}
               </div>
 
-              {/* Summary */}
               <div className="border-t border-splash-border px-6 py-5 space-y-3 bg-white">
                 <div className="flex items-center justify-between">
                   <span className="font-inter text-sm text-splash-gray">Sous-total</span>
@@ -216,7 +216,7 @@ export default function CartSidebar() {
                 <div className="flex items-center justify-between">
                   <span className="font-inter text-sm text-splash-gray">Livraison</span>
                   <span className="font-montserrat text-sm font-bold text-black">
-                    {DELIVERY_FEE} DT
+                    {deliveryFee} DT
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-splash-border">
@@ -229,7 +229,6 @@ export default function CartSidebar() {
                 </div>
 
                 <div className="pt-2 space-y-3">
-                  {/* Address */}
                   <div>
                     <label htmlFor="cart-address" className="font-montserrat text-xs font-bold text-black uppercase tracking-wider block mb-1.5">
                       Adresse de livraison <span className="text-red-500">*</span>
