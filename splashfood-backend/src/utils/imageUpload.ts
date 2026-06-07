@@ -30,8 +30,9 @@ const uploadToR2 = async (
   return `${r2PublicUrl}/${key}`;
 };
 
-// Process and upload image - Workers don't have Sharp, so we upload as-is
-// In production, use a Cloudflare Images transform or an Image Resizing Worker
+// Process and upload image - Workers don't have Sharp, so we upload once
+// and return the same URL for all variants. Cloudflare Image Resizing
+// can transform the image at the CDN edge via URL params if needed.
 export const processAndUploadImage = async (
   env: Env,
   file: File,
@@ -39,22 +40,13 @@ export const processAndUploadImage = async (
 ): Promise<ImageVariants> => {
   const arrayBuffer = await file.arrayBuffer();
   const baseName = file.name || 'image';
+  const contentType = file.type || 'image/jpeg';
 
-  // Upload all variants as the same image (Workers don't have native sharp)
-  // The R2 public URL + Cloudflare Image Resizing handles transformation
-  const [originalKey, webKey, thumbKey] = [
-    generateFilename(prefix, baseName, 'original'),
-    generateFilename(prefix, baseName, 'web'),
-    generateFilename(prefix, baseName, 'thumb'),
-  ];
+  // Upload a single file and reuse the URL for all three variant slots
+  const key = generateFilename(prefix, baseName, 'web');
+  const url = await uploadToR2(env.R2, env.R2_PUBLIC_URL, key, arrayBuffer, contentType);
 
-  const [original, web, thumbnail] = await Promise.all([
-    uploadToR2(env.R2, env.R2_PUBLIC_URL, originalKey, arrayBuffer, file.type || 'image/jpeg'),
-    uploadToR2(env.R2, env.R2_PUBLIC_URL, webKey, arrayBuffer, file.type || 'image/jpeg'),
-    uploadToR2(env.R2, env.R2_PUBLIC_URL, thumbKey, arrayBuffer, file.type || 'image/jpeg'),
-  ]);
-
-  return { original, web, thumbnail };
+  return { original: url, web: url, thumbnail: url };
 };
 
 export const deleteImageFromR2 = async (r2: R2Bucket, r2PublicUrl: string, imageUrl: string): Promise<void> => {

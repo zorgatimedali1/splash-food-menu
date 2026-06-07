@@ -112,7 +112,10 @@ export const handleCategories = async (request: Request, env: Env, path: string,
     if (isAuthError(auth)) return auth;
 
     const id = parseInt(pathParts[2], 10);
+    if (isNaN(id)) return jsonResponse(errorResponse('Invalid category ID'), 400);
+
     const contentType = request.headers.get('Content-Type') || '';
+    const ALLOWED_CATEGORY_FIELDS = new Set(['name', 'description', 'image_url', 'sort_order', 'is_active']);
     const fields: Record<string, unknown> = {};
 
     if (contentType.includes('multipart/form-data')) {
@@ -135,6 +138,11 @@ export const handleCategories = async (request: Request, env: Env, path: string,
     }
 
     if (Object.keys(fields).length === 0) return jsonResponse(errorResponse('No fields to update'), 400);
+
+    // Validate all keys are whitelisted before building SQL
+    for (const k of Object.keys(fields)) {
+      if (!ALLOWED_CATEGORY_FIELDS.has(k)) return jsonResponse(errorResponse(`Invalid field: ${k}`), 400);
+    }
 
     const setClause = Object.keys(fields).map(k => `${k} = ?`).join(', ');
     const values = [...Object.values(fields), id];

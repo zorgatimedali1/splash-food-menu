@@ -56,7 +56,10 @@ export const handleSupplements = async (request: Request, env: Env, path: string
     if (isAuthError(auth)) return auth;
 
     const id = parseInt(pathParts[2], 10);
+    if (isNaN(id)) return jsonResponse(errorResponse('Invalid supplement ID'), 400);
+
     const body = await request.json() as { name?: string; price?: number; is_active?: number };
+    const ALLOWED_SUPPLEMENT_FIELDS = new Set(['name', 'price', 'is_active']);
     const fields: Record<string, unknown> = {};
 
     if (body.name !== undefined) fields.name = body.name;
@@ -64,6 +67,11 @@ export const handleSupplements = async (request: Request, env: Env, path: string
     if (body.is_active !== undefined) fields.is_active = body.is_active;
 
     if (Object.keys(fields).length === 0) return jsonResponse(errorResponse('No fields to update'), 400);
+
+    // Validate all keys are whitelisted before building SQL
+    for (const k of Object.keys(fields)) {
+      if (!ALLOWED_SUPPLEMENT_FIELDS.has(k)) return jsonResponse(errorResponse(`Invalid field: ${k}`), 400);
+    }
 
     const setClause = Object.keys(fields).map(k => `${k} = ?`).join(', ');
     const result = await env.DB.prepare(`UPDATE supplements SET ${setClause} WHERE id = ? RETURNING *`)

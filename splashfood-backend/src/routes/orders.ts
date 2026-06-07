@@ -29,6 +29,37 @@ export const handleOrders = async (request: Request, env: Env, path: string, pat
 
       const items = typeof body.items === 'string' ? body.items : JSON.stringify(body.items);
 
+      // Recalculate total server-side to prevent client-side manipulation.
+      // Parse items, look up prices from DB, and add delivery fee.
+      let serverTotal: number | null = null;
+      try {
+        const parsed: { product_id?: number; quantity?: number; price?: number; supplements?: { price: number }[] }[] =
+          JSON.parse(typeof body.items === 'string' ? body.items : JSON.stringify(body.items));
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          let sum = 0;
+          for (const item of parsed) {
+            if (item.product_id) {
+              const dbProduct = await env.DB.prepare('SELECT price FROM products WHERE id = ? AND is_active = 1')
+                .bind(item.product_id).first<{ price: number }>();
+              if (dbProduct) {
+                const qty = Math.max(1, Math.floor(item.quantity ?? 1));
+                const suppTotal = Array.isArray(item.supplements)
+                  ? item.supplements.reduce((s, sup) => s + (sup.price || 0), 0)
+                  : 0;
+                sum += (dbProduct.price + suppTotal) * qty;
+              }
+            }
+          }
+          if (sum > 0) {
+            const deliveryFee = Number(body.delivery_fee) || 2;
+            serverTotal = Math.round((sum + deliveryFee) * 100) / 100;
+          }
+        }
+      } catch {
+        // If parsing fails, fall back to client total (better than rejecting the order)
+      }
+
       const result = await env.DB.prepare(
         `INSERT INTO orders (customer_name, customer_address, customer_phone, items, total, delivery_fee, notes)
          VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`
@@ -37,7 +68,7 @@ export const handleOrders = async (request: Request, env: Env, path: string, pat
         body.customer_address || null,
         body.customer_phone || null,
         items,
-        body.total || null,
+        serverTotal ?? body.total ?? null,
         body.delivery_fee || null,
         body.notes || null
       ).first<Order>();
@@ -79,10 +110,14 @@ export const handleOrders = async (request: Request, env: Env, path: string, pat
 
   // GET /api/orders/:id - Admin
   if (pathParts.length === 3 && method === 'GET') {
+    const limited = adminRateLimit(request);
+    if (limited) return limited;
     const auth = await requireAuth(request, env);
     if (isAuthError(auth)) return auth;
 
     const id = parseInt(pathParts[2], 10);
+    if (isNaN(id)) return jsonResponse(errorResponse('Invalid order ID'), 400);
+
     const order = await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first<Order>();
     if (!order) return jsonResponse(errorResponse('Order not found'), 404);
 

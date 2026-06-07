@@ -78,15 +78,18 @@ export const handleStats = async (request: Request, env: Env, path: string): Pro
     const cached = cacheGet(cacheKey);
     if (cached) return jsonResponse(formatResponse(cached), 200, privateCacheHeaders);
 
-    // Since items is JSON, we can't do complex aggregation in SQLite
-    // Return top products by recent orders approximation
+    // Use JSON-safe boundary matching: product IDs in the items JSON are always
+    // preceded by `"product_id":` so we match that exact pattern to avoid
+    // false positives (e.g. id=1 matching inside id=10 or id=11).
     const { results } = await env.DB.prepare(
-      `SELECT p.name, c.name as category, p.price,
+      `SELECT p.id, p.name, c.name as category, p.price,
               COUNT(o.id) as order_count,
               COUNT(o.id) * p.price as total_revenue
        FROM products p
        LEFT JOIN categories c ON p.category_id = c.id
-       LEFT JOIN orders o ON o.items LIKE '%' || p.id || '%'
+       LEFT JOIN orders o ON o.items LIKE '%"product_id":' || p.id || ',%'
+                          OR o.items LIKE '%"product_id":' || p.id || '}'
+                          OR o.items LIKE '%"product_id":' || p.id || ' %'
        WHERE p.is_active = 1
        GROUP BY p.id
        ORDER BY order_count DESC

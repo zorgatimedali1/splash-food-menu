@@ -41,8 +41,8 @@ export function getProductSlug(category: string, name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-function useFetchOnce<T>(key: string, path: string): { data: T; loading: boolean } {
-  const [data, setData] = useState<T>([] as unknown as T);
+function useFetchOnce<T>(key: string, path: string, initialValue: T): { data: T; loading: boolean } {
+  const [data, setData] = useState<T>(initialValue);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -64,27 +64,27 @@ function useFetchOnce<T>(key: string, path: string): { data: T; loading: boolean
 }
 
 export function useCategories() {
-  const { data, loading } = useFetchOnce<CategoryDTO[]>('categories', '/api/categories');
+  const { data, loading } = useFetchOnce<CategoryDTO[]>('categories', '/api/categories', []);
   return { categories: data, loading };
 }
 
 export function useProducts() {
-  const { data, loading } = useFetchOnce<ProductDTO[]>('products', '/api/products?limit=200');
+  const { data, loading } = useFetchOnce<ProductDTO[]>('products', '/api/products?limit=200', []);
   return { products: data, loading };
 }
 
 export function useBestSellers() {
-  const { data, loading } = useFetchOnce<ProductDTO[]>('bestsellers', '/api/products?bestsellers=true');
+  const { data, loading } = useFetchOnce<ProductDTO[]>('bestsellers', '/api/products?bestsellers=true', []);
   return { bestSellers: data, loading };
 }
 
 export function useSettings() {
-  const { data, loading } = useFetchOnce<SettingsDTO | null>('settings', '/api/settings');
+  const { data, loading } = useFetchOnce<SettingsDTO | null>('settings', '/api/settings', null);
   return { settings: data, loading };
 }
 
 export function useSupplements() {
-  const { data, loading } = useFetchOnce<SupplementDTO[]>('supplements', '/api/supplements');
+  const { data, loading } = useFetchOnce<SupplementDTO[]>('supplements', '/api/supplements', []);
   return { supplements: data, loading };
 }
 

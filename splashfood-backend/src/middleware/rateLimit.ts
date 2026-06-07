@@ -5,6 +5,18 @@ interface RateLimitEntry {
 
 const limiters = new Map<string, RateLimitEntry>();
 
+// Periodically prune expired entries so the Map doesn't grow unbounded
+// (Workers are long-lived within an isolate between requests)
+let lastPruned = 0;
+const pruneExpired = () => {
+  const now = Date.now();
+  if (now - lastPruned < 60_000) return; // at most once per minute
+  lastPruned = now;
+  for (const [key, entry] of limiters) {
+    if (now > entry.resetAt) limiters.delete(key);
+  }
+};
+
 const getClientIP = (request: Request): string => {
   return (
     request.headers.get('CF-Connecting-IP') ||
@@ -22,6 +34,8 @@ export const rateLimit = (
   const ip = getClientIP(request);
   const key = `${keyPrefix}:${ip}`;
   const now = Date.now();
+
+  pruneExpired();
 
   const entry = limiters.get(key);
 

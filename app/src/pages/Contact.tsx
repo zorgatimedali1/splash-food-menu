@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import PageHeader from '@/components/PageHeader';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { CONTACT_INFO } from '@/data';
 import { FaPhone, FaMapMarkerAlt, FaClock, FaEnvelope } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
 const iconMap: Record<string, React.ElementType> = {
   phone: FaPhone,
@@ -13,6 +15,10 @@ const iconMap: Record<string, React.ElementType> = {
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const formRef2 = useRef<HTMLFormElement>(null);
+
   const cardsRef = useScrollAnimation<HTMLDivElement>({
     type: 'staggerCards',
     childSelector: '.contact-card',
@@ -21,10 +27,37 @@ export default function Contact() {
   const formRef = useScrollAnimation<HTMLDivElement>({ type: 'fadeUp' });
   const mapRef = useScrollAnimation<HTMLDivElement>({ type: 'slideInRight', delay: 0.2 });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
+    setError(null);
+    setSubmitting(true);
+
+    const form = e.currentTarget;
+    const name = (form.elements.namedItem('contact-name') as HTMLInputElement).value.trim();
+    const email = (form.elements.namedItem('contact-email') as HTMLInputElement).value.trim();
+    const subject = (form.elements.namedItem('contact-subject') as HTMLInputElement).value.trim();
+    const message = (form.elements.namedItem('contact-message') as HTMLTextAreaElement).value.trim();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.message || 'Erreur lors de l\'envoi');
+      }
+
+      setSubmitted(true);
+      formRef2.current?.reset();
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi. Veuillez réessayer.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -88,25 +121,28 @@ export default function Contact() {
                   <p className="text-splash-gray text-sm font-inter">Merci de nous avoir contacte. Nous vous repondrons sous peu.</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form ref={formRef2} onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label htmlFor="contact-name" className="block text-sm font-semibold text-black mb-2 font-inter">Nom *</label>
-                    <input id="contact-name" type="text" required placeholder="Votre nom" className="input-field" />
+                    <input id="contact-name" name="contact-name" type="text" required placeholder="Votre nom" className="input-field" />
                   </div>
                   <div>
                     <label htmlFor="contact-email" className="block text-sm font-semibold text-black mb-2 font-inter">Email *</label>
-                    <input id="contact-email" type="email" required placeholder="Votre email" className="input-field" />
+                    <input id="contact-email" name="contact-email" type="email" required placeholder="Votre email" className="input-field" />
                   </div>
                   <div>
                     <label htmlFor="contact-subject" className="block text-sm font-semibold text-black mb-2 font-inter">Sujet *</label>
-                    <input id="contact-subject" type="text" required placeholder="Sujet" className="input-field" />
+                    <input id="contact-subject" name="contact-subject" type="text" required placeholder="Sujet" className="input-field" />
                   </div>
                   <div>
                     <label htmlFor="contact-message" className="block text-sm font-semibold text-black mb-2 font-inter">Message *</label>
-                    <textarea id="contact-message" rows={6} required placeholder="Votre message..." className="input-field resize-none" />
+                    <textarea id="contact-message" name="contact-message" rows={6} required placeholder="Votre message..." className="input-field resize-none" />
                   </div>
-                  <button type="submit" className="btn-primary w-full">
-                    ENVOYER
+                  {error && (
+                    <p className="text-sm text-red-500 font-inter">{error}</p>
+                  )}
+                  <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60 disabled:cursor-not-allowed">
+                    {submitting ? 'ENVOI EN COURS...' : 'ENVOYER'}
                   </button>
                 </form>
               )}

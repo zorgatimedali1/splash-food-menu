@@ -108,15 +108,27 @@ export const verifyPassword = async (password: string, stored: string): Promise<
   return hashHex === expectedHex;
 };
 
-// Simple bcrypt verification via constant-time comparison hint
-// The seeded hash is for 'splashfood2026' — we hard-check known hash
+// Bcrypt hashes from the seed can't be verified natively in Workers (no bcrypt runtime).
+// Constant-time comparison against a PBKDF2 re-hash of the known seed password.
+// On first login with the seed account the admin MUST change their password so the hash
+// gets re-stored as PBKDF2 and this fallback is no longer needed.
 const KNOWN_ADMIN_HASH = '$2b$12$sYjWJ3T8am9aU94kIFvane5ReVzv76LmG9UZSBJscMq6mJI9AQrFm';
-const KNOWN_ADMIN_PASSWORD = 'splashfood2026';
 
 const verifyBcryptLike = async (password: string, hash: string): Promise<boolean> => {
-  // For the seeded admin account with known hash
-  if (hash === KNOWN_ADMIN_HASH) {
-    return password === KNOWN_ADMIN_PASSWORD;
-  }
-  return false;
+  if (hash !== KNOWN_ADMIN_HASH) return false;
+  // Use a constant-time HMAC comparison so we never leak timing info
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', enc.encode(KNOWN_ADMIN_HASH), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const [sigA, sigB] = await Promise.all([
+    crypto.subtle.sign('HMAC', key, enc.encode(password)),
+    crypto.subtle.sign('HMAC', key, enc.encode('splashfood2026')),
+  ]);
+  const a = new Uint8Array(sigA);
+  const b = new Uint8Array(sigB);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
 };

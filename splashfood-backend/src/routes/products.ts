@@ -176,7 +176,11 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
     if (isAuthError(auth)) return auth;
 
     const id = parseInt(pathParts[2], 10);
+    if (isNaN(id)) return jsonResponse(errorResponse('Invalid product ID'), 400);
+
     const contentType = request.headers.get('Content-Type') || '';
+    // Whitelist prevents arbitrary column names from reaching the SQL SET clause
+    const ALLOWED_PRODUCT_FIELDS = new Set(['name', 'description', 'price', 'category_id', 'sort_order', 'is_active', 'image_url', 'updated_at']);
     const fields: Record<string, unknown> = {};
 
     if (contentType.includes('multipart/form-data')) {
@@ -199,7 +203,15 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
       allowed.forEach(k => { if (body[k] !== undefined) fields[k] = body[k]; });
     }
 
+    if (Object.keys(fields).length === 0) return jsonResponse(errorResponse('No fields to update'), 400);
+
     fields.updated_at = new Date().toISOString();
+
+    // Validate all keys are whitelisted before building SQL
+    for (const k of Object.keys(fields)) {
+      if (!ALLOWED_PRODUCT_FIELDS.has(k)) return jsonResponse(errorResponse(`Invalid field: ${k}`), 400);
+    }
+
     const setClause = Object.keys(fields).map(k => `${k} = ?`).join(', ');
     const values = [...Object.values(fields), id];
     const result = await env.DB.prepare(`UPDATE products SET ${setClause} WHERE id = ? RETURNING *`).bind(...values).first<Product>();
