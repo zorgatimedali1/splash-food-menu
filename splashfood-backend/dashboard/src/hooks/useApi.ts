@@ -71,6 +71,7 @@ export const useDeleteCategory = () => {
 // ─── Products ────────────────────────────────────────────────────────────────
 export const useProducts = (params?: { category?: string; search?: string; page?: number; limit?: number }) => {
   const qs = new URLSearchParams();
+  qs.set('all', 'true');
   if (params?.category) qs.set('category', params.category);
   if (params?.search) qs.set('search', params.search);
   if (params?.page) qs.set('page', String(params.page));
@@ -105,14 +106,14 @@ export const useToggleProduct = () => {
     mutationFn: (id: number) => api.put(`/api/products/${id}/toggle`, {}),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ['products'] });
-      const prev = qc.getQueryData(['products']);
+      const prev = qc.getQueriesData<PaginatedResponse<Product>>({ queryKey: ['products'] });
       qc.setQueriesData({ queryKey: ['products'] }, (old: PaginatedResponse<Product> | undefined) => {
         if (!old) return old;
         return { ...old, data: old.data.map(p => p.id === id ? { ...p, is_active: p.is_active ? 0 : 1 } : p) };
       });
       return { prev };
     },
-    onError: (_err, _id, ctx) => { if (ctx?.prev) qc.setQueryData(['products'], ctx.prev); },
+    onError: (_err, _id, ctx) => { ctx?.prev.forEach(([key, data]) => qc.setQueryData(key, data)); },
     onSettled: () => { qc.invalidateQueries({ queryKey: ['products'] }); qc.invalidateQueries({ queryKey: ['stats'] }); },
   });
 };
@@ -123,14 +124,14 @@ export const useToggleBestseller = () => {
     mutationFn: (id: number) => api.put(`/api/products/${id}/bestseller`, {}),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ['products'] });
-      const prev = qc.getQueryData(['products']);
+      const prev = qc.getQueriesData<PaginatedResponse<Product>>({ queryKey: ['products'] });
       qc.setQueriesData({ queryKey: ['products'] }, (old: PaginatedResponse<Product> | undefined) => {
         if (!old) return old;
         return { ...old, data: old.data.map(p => p.id === id ? { ...p, is_bestseller: p.is_bestseller ? 0 : 1 } : p) };
       });
       return { prev };
     },
-    onError: (_err, _id, ctx) => { if (ctx?.prev) qc.setQueryData(['products'], ctx.prev); },
+    onError: (_err, _id, ctx) => { ctx?.prev.forEach(([key, data]) => qc.setQueryData(key, data)); },
     onSettled: () => { qc.invalidateQueries({ queryKey: ['products'] }); },
   });
 };
@@ -167,14 +168,14 @@ export const useUpdateSupplement = () => {
     onMutate: async ({ id, is_active }) => {
       if (is_active === undefined) return;
       await qc.cancelQueries({ queryKey: ['supplements'] });
-      const prev = qc.getQueryData(['supplements']);
-      qc.setQueryData(['supplements'], (old: SingleResponse<Supplement[]> | undefined) => {
+      const prev = qc.getQueriesData<SingleResponse<Supplement[]>>({ queryKey: ['supplements'] });
+      qc.setQueriesData({ queryKey: ['supplements'] }, (old: SingleResponse<Supplement[]> | undefined) => {
         if (!old) return old;
         return { ...old, data: old.data.map(s => s.id === id ? { ...s, is_active } : s) };
       });
       return { prev };
     },
-    onError: (_err, _vars, ctx) => { if (ctx?.prev) qc.setQueryData(['supplements'], ctx.prev); },
+    onError: (_err, _vars, ctx) => { ctx?.prev.forEach(([key, data]) => qc.setQueryData(key, data)); },
     onSettled: () => qc.invalidateQueries({ queryKey: ['supplements'] }),
   });
 };

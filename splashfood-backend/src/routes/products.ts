@@ -19,12 +19,13 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
     const category = url.searchParams.get('category');
     const search = url.searchParams.get('search');
     const bestsellers = url.searchParams.get('bestsellers') === 'true';
+    const all = url.searchParams.get('all') === 'true';
 
-    const cacheKey = `products:${category}:${search}:${bestsellers}:${page}:${limit}`;
-    const cached = cacheGet(cacheKey);
+    const cacheKey = `products:${category}:${search}:${bestsellers}:${all}:${page}:${limit}`;
+    const cached = !all ? cacheGet(cacheKey) : null;
     if (cached) return jsonResponse(cached, 200, publicCacheHeaders);
 
-    let where = 'p.is_active = 1';
+    let where = all ? '1=1' : 'p.is_active = 1';
     const params: unknown[] = [];
 
     if (category) {
@@ -51,8 +52,8 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
 
     const total = countResult?.total || 0;
     const response = formatPaginatedResponse(results, total, page, limit);
-    cacheSet(cacheKey, response, 180);
-    return jsonResponse(response, 200, publicCacheHeaders);
+    if (!all) cacheSet(cacheKey, response, 180);
+    return jsonResponse(response, 200, all ? undefined : publicCacheHeaders);
   }
 
   // GET /api/products/:id
