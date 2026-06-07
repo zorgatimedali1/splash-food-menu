@@ -19,6 +19,7 @@ export interface ProductDTO {
   price: number;
   image_url: string | null;
   is_active: number;
+  is_bestseller: number;
   sort_order: number;
   category_name: string;
 }

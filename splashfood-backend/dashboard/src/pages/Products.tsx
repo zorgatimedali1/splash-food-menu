@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
 import {
   useProducts, useCategories, useCreateProduct, useUpdateProduct,
-  useDeleteProduct, useToggleProduct, type Product
+  useDeleteProduct, useToggleProduct, useToggleBestseller, type Product
 } from '../hooks/useApi';
 import Modal from '../components/Modal';
 import ImageUpload from '../components/ImageUpload';
@@ -99,6 +99,7 @@ export default function Products() {
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const toggleProduct = useToggleProduct();
+  const toggleBestseller = useToggleBestseller();
 
   const products = data?.data || [];
   const categories = catData?.data || [];
@@ -154,6 +155,7 @@ export default function Products() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-splash-gray uppercase tracking-wide">Produit</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-splash-gray uppercase tracking-wide hidden md:table-cell">Catégorie</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-splash-gray uppercase tracking-wide">Prix</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-splash-gray uppercase tracking-wide">Best-seller</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-splash-gray uppercase tracking-wide">Actif</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-splash-gray uppercase tracking-wide">Actions</th>
               </tr>
@@ -167,12 +169,13 @@ export default function Products() {
                     <td className="px-4 py-3 hidden md:table-cell"><div className="h-4 bg-splash-light-gray rounded w-20" /></td>
                     <td className="px-4 py-3"><div className="h-4 bg-splash-light-gray rounded w-16 ml-auto" /></td>
                     <td className="px-4 py-3"><div className="h-5 w-9 bg-splash-light-gray rounded-full mx-auto" /></td>
+                    <td className="px-4 py-3"><div className="h-5 w-9 bg-splash-light-gray rounded-full mx-auto" /></td>
                     <td className="px-4 py-3"><div className="h-4 bg-splash-light-gray rounded w-16 ml-auto" /></td>
                   </tr>
                 ))
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-splash-gray text-sm">
+                  <td colSpan={7} className="px-4 py-12 text-center text-splash-gray text-sm">
                     Aucun produit trouvé
                   </td>
                 </tr>
@@ -198,6 +201,15 @@ export default function Products() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right font-semibold tabular-nums">{fmt(product.price)} DT</td>
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => toggleBestseller.mutate(product.id)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${product.is_bestseller ? 'bg-amber-500' : 'bg-splash-border'}`}
+                      title={product.is_bestseller ? 'Retirer des best-sellers' : 'Marquer best-seller'}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform shadow-sm ${product.is_bestseller ? 'translate-x-4' : 'translate-x-1'}`} />
+                    </button>
+                  </td>
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => toggleProduct.mutate(product.id)}

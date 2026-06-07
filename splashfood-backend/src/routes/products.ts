@@ -18,8 +18,9 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
     const { page, limit, offset } = parsePagination(url);
     const category = url.searchParams.get('category');
     const search = url.searchParams.get('search');
+    const bestsellers = url.searchParams.get('bestsellers') === 'true';
 
-    const cacheKey = `products:${category}:${search}:${page}:${limit}`;
+    const cacheKey = `products:${category}:${search}:${bestsellers}:${page}:${limit}`;
     const cached = cacheGet(cacheKey);
     if (cached) return jsonResponse(cached, 200, publicCacheHeaders);
 
@@ -33,6 +34,9 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
     if (search) {
       where += ' AND (p.name LIKE ? OR p.description LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
+    }
+    if (bestsellers) {
+      where += ' AND p.is_bestseller = 1';
     }
 
     const [countResult, { results }] = await Promise.all([
@@ -139,6 +143,22 @@ export const handleProducts = async (request: Request, env: Env, path: string, p
 
     flushMultiple('products', 'stats');
     return jsonResponse(formatResponse({ is_active: newActive }), 200);
+  }
+
+  // PUT /api/products/:id/bestseller
+  if (pathParts.length === 4 && pathParts[3] === 'bestseller' && method === 'PUT') {
+    const auth = await requireAuth(request, env);
+    if (isAuthError(auth)) return auth;
+
+    const id = parseInt(pathParts[2], 10);
+    const product = await env.DB.prepare('SELECT is_bestseller FROM products WHERE id = ?').bind(id).first<{ is_bestseller: number }>();
+    if (!product) return jsonResponse(errorResponse('Product not found'), 404);
+
+    const newBestseller = product.is_bestseller ? 0 : 1;
+    await env.DB.prepare('UPDATE products SET is_bestseller = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').bind(newBestseller, id).run();
+
+    flushMultiple('products', 'stats');
+    return jsonResponse(formatResponse({ is_bestseller: newBestseller }), 200);
   }
 
   // PUT /api/products/:id

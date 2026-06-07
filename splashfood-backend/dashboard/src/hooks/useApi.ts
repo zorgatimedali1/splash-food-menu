@@ -12,7 +12,7 @@ export interface Category {
 }
 export interface Product {
   id: number; category_id: number; name: string; description: string | null;
-  price: number; image_url: string | null; is_active: number; sort_order: number;
+  price: number; image_url: string | null; is_active: number; is_bestseller: number; sort_order: number;
   created_at: string; updated_at: string; category_name?: string;
 }
 export interface Supplement {
@@ -114,6 +114,24 @@ export const useToggleProduct = () => {
     },
     onError: (_err, _id, ctx) => { if (ctx?.prev) qc.setQueryData(['products'], ctx.prev); },
     onSettled: () => { qc.invalidateQueries({ queryKey: ['products'] }); qc.invalidateQueries({ queryKey: ['stats'] }); },
+  });
+};
+
+export const useToggleBestseller = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.put(`/api/products/${id}/bestseller`, {}),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['products'] });
+      const prev = qc.getQueryData(['products']);
+      qc.setQueriesData({ queryKey: ['products'] }, (old: PaginatedResponse<Product> | undefined) => {
+        if (!old) return old;
+        return { ...old, data: old.data.map(p => p.id === id ? { ...p, is_bestseller: p.is_bestseller ? 0 : 1 } : p) };
+      });
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => { if (ctx?.prev) qc.setQueryData(['products'], ctx.prev); },
+    onSettled: () => { qc.invalidateQueries({ queryKey: ['products'] }); },
   });
 };
 

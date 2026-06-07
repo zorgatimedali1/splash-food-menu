@@ -34,6 +34,7 @@ async function fetchWithCache<T>(key: string, path: string): Promise<T> {
 
 let categoriesPromise: Promise<CategoryDTO[]> | null = null;
 let productsPromise: Promise<ProductDTO[]> | null = null;
+let bestSellersPromise: Promise<ProductDTO[]> | null = null;
 let supplementsPromise: Promise<SupplementDTO[]> | null = null;
 let settingsPromise: Promise<SettingsDTO> | null = null;
 
@@ -94,6 +95,31 @@ export function useProducts() {
   }, []);
 
   return { products, loading };
+}
+
+export function useBestSellers() {
+  const [bestSellers, setBestSellers] = useState<ProductDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!bestSellersPromise) {
+          bestSellersPromise = fetchWithCache<ProductDTO[]>('bestsellers', '/api/products?bestsellers=true');
+        }
+        const data = await bestSellersPromise;
+        if (!cancelled) setBestSellers(data);
+      } catch (e) {
+        console.error('Failed to fetch best sellers:', e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return { bestSellers, loading };
 }
 
 export function useSettings() {

@@ -7,16 +7,19 @@ import { FiChevronLeft, FiChevronRight, FiShoppingCart } from 'react-icons/fi';
 import { toast } from 'sonner';
 import SectionTitle from '@/components/SectionTitle';
 import Img from '@/components/Img';
-import { BEST_SELLERS } from '@/data';
+import { useBestSellers, getProductSlug } from '@/hooks/useMenuApi';
 import { useCart } from '@/context/CartContext';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
 export default function BestSellersSection() {
+  const { bestSellers, loading } = useBestSellers();
   const swiperRef = useRef<SwiperType | null>(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+
+  if (loading || bestSellers.length === 0) return null;
 
   return (
     <section ref={sectionRef} className="section-padding bg-splash-light-gray">
@@ -60,8 +63,8 @@ export default function BestSellersSection() {
             1024: { slidesPerView: 3 },
           }}
         >
-          {BEST_SELLERS.map((item) => (
-            <SwiperSlide key={item.name}>
+          {bestSellers.map((item) => (
+            <SwiperSlide key={item.id}>
               <BestSellerCard item={item} />
             </SwiperSlide>
           ))}
@@ -71,16 +74,17 @@ export default function BestSellersSection() {
   );
 }
 
-function BestSellerCard({ item }: { item: typeof BEST_SELLERS[0] }) {
+function BestSellerCard({ item }: { item: { id: number; name: string; description: string | null; price: number; image_url: string | null; category_name: string } }) {
   const { addToCart } = useCart();
   const cardRef = useRef<HTMLDivElement>(null);
+  const slug = getProductSlug(item.category_name, item.name);
 
   const handleAdd = useCallback(() => {
     addToCart({
-      category: item.name.split(' ').slice(0, 1).join(' '),
+      category: item.category_name,
       name: item.name,
       price: item.price,
-      image: item.image,
+      image: item.image_url || '',
     });
     toast.success('Produit ajouté au panier', {
       style: {
@@ -108,9 +112,9 @@ function BestSellerCard({ item }: { item: typeof BEST_SELLERS[0] }) {
       className="group bg-white rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{ border: '2px solid #c8a94e' }}
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <Link to={`/product/${slug}`} className="relative block aspect-[4/3] overflow-hidden">
         <Img
-          src={item.image}
+          src={item.image_url || ''}
           alt={item.name}
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
@@ -126,25 +130,22 @@ function BestSellerCard({ item }: { item: typeof BEST_SELLERS[0] }) {
         >
           PREMIUM
         </span>
-      </div>
+      </Link>
       <div className="p-5">
-        <h3 className="font-montserrat text-lg font-bold text-black group-hover:text-black/60 transition-colors duration-300">
-          {item.name}
-        </h3>
+        <Link to={`/product/${slug}`}>
+          <h3 className="font-montserrat text-lg font-bold text-black group-hover:text-black/60 transition-colors duration-300">
+            {item.name}
+          </h3>
+        </Link>
         <p className="mt-1.5 text-sm text-splash-gray leading-relaxed">
           {item.description}
         </p>
         <p className="mt-3 font-montserrat text-lg font-extrabold" style={{ color: '#c8a94e' }}>
           ⭐ {item.price.toLocaleString('fr-FR')} DT
         </p>
-        {item.tagline && (
-          <p className="mt-1 text-xs text-splash-gray font-inter italic">
-            {item.tagline}
-          </p>
-        )}
         <div className="mt-3 flex items-center gap-2">
           <Link
-            to={`/product/${item.slug}`}
+            to={`/product/${slug}`}
             className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-white text-xs font-montserrat font-bold transition-all duration-300"
             style={{ backgroundColor: '#25D366' }}
           >

@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS products (
   price REAL NOT NULL,
   image_url TEXT,
   is_active INTEGER DEFAULT 1,
+  is_bestseller INTEGER DEFAULT 0,
   sort_order INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
