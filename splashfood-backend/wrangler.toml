@@ -15,4 +15,5 @@ bucket_name = "splashfood-images"
 [vars]
 JWT_SECRET = "splashfood-super-secret-jwt-key-2026-change-in-prod"
 R2_PUBLIC_URL = "https://pub-6ac384b9162e4591a6d31dbe706c6433.r2.dev"
-FRONTEND_ORIGIN = "https://splashfood.tn"
+FRONTEND_ORIGIN = "https://splash-food-menu.pages.dev"
+DASHBOARD_ORIGIN = "https://splashfood-dashboard.pages.dev"

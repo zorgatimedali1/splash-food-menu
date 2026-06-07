@@ -15,6 +15,8 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'https://splashfood.tn',
   'https://www.splashfood.tn',
+  'https://splash-food-menu.pages.dev',
+  'https://splashfood-dashboard.pages.dev',
 ];
 
 const getCorsHeaders = (origin: string | null): Record<string, string> => {
